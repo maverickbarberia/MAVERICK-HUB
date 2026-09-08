@@ -73,12 +73,14 @@ export default async function ClientsPage() {
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-bold text-white truncate">
-                    {client.full_name}
-                  </h3>
-                  <p className="text-gray-400 text-sm truncate">
-                    Doc: {client.document_number}
-                  </p>
+                  <Link href={`/admin/clients/${client.id}`} className="block hover:opacity-80 transition-opacity">
+                    <h3 className="text-lg font-bold text-white truncate">
+                      {client.full_name}
+                    </h3>
+                    <p className="text-gray-400 text-sm truncate">
+                      Doc: {client.document_number}
+                    </p>
+                  </Link>
                   
                   <div className="mt-3 flex items-center gap-2">
                     <div className="h-2 flex-1 bg-white/10 rounded-full overflow-hidden">
