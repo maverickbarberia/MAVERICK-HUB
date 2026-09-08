@@ -78,7 +78,7 @@ export default async function DashboardPage() {
         {(stampsEarned === 4 || stampsEarned === 9) && (
           <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-200 p-4 rounded-2xl flex items-center justify-center text-center animate-pulse shadow-[0_0_15px_rgba(234,179,8,0.2)]">
             <p className="font-bold text-sm tracking-wide uppercase">
-              ¡Estás a 1 sello de tu {stampsEarned === 4 ? '50% DE DESCUENTO' : 'CORTE GRATIS'}!
+              ¡Estás a 1 sello de tu {stampsEarned === 4 ? '15% DE DESCUENTO' : 'CORTE GRATIS'}!
             </p>
           </div>
         )}
