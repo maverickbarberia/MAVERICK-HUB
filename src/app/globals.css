@@ -6,6 +6,13 @@
 }
 
 @layer base {
+  html, body {
+    /* Touch fixes for iOS */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-overflow-scrolling: touch;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-title);
     text-transform: uppercase;

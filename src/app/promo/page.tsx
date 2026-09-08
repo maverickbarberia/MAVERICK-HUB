@@ -2,7 +2,7 @@ import { StampCard } from "@/components/ui/StampCard";
 
 export default function PromoPage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#1a1a1a]">
+    <main className="min-h-[100dvh] flex flex-col items-center justify-center p-4 bg-[#1a1a1a]">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-black text-white tracking-tight uppercase">

@@ -12,7 +12,7 @@ export default function AdminPage() {
   const [isPending, startTransition] = useTransition()
   
   return (
-    <main className="min-h-screen p-4 flex flex-col items-center">
+    <main className="min-h-[100dvh] p-4 flex flex-col items-center">
       <div className="w-full max-w-md pt-2 space-y-6 relative z-10 mx-auto">
         
         {/* Cabecera del Escáner */}

@@ -33,7 +33,7 @@ export default async function DashboardPage() {
   const stampsEarned = profile.stamps_earned || 0;
 
   return (
-    <main className="min-h-screen p-4 flex flex-col items-center">
+    <main className="min-h-[100dvh] p-4 flex flex-col items-center">
       <div className="w-full max-w-md pt-8 space-y-6">
         
         {/* Cabecera del Usuario con Glassmorphism */}

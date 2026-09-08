@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-4 relative z-10 overflow-hidden">
+    <main className="min-h-[100dvh] flex flex-col items-center justify-center p-4 relative z-10 overflow-x-clip">
       
       {/* Luz de fondo sutil y dinámica */}
       <motion.div 
