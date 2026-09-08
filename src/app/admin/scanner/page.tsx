@@ -32,7 +32,6 @@ export default function AdminPage() {
                     }
                   }}
                   components={{
-                    audio: false,
                     finder: true,
                   }}
                 />
