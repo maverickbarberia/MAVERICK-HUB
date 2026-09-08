@@ -12,6 +12,7 @@
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "@yudiel/react-qr-scanner": "latest",
+    "canvas-confetti": "^1.9.4",
     "clsx": "latest",
     "framer-motion": "^13.2.0",
     "lucide-react": "latest",
@@ -19,10 +20,12 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-qr-code": "latest",
+    "sonner": "^2.0.8",
     "tailwind-merge": "latest"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

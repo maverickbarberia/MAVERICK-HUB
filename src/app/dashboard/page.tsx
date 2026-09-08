@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { signout } from "@/app/actions";
 import { cookies } from "next/headers";
 import { LogOut } from "lucide-react";
+import { RealtimeStampWatcher } from "@/components/client/RealtimeStampWatcher";
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();
@@ -78,6 +79,8 @@ export default async function DashboardPage() {
           <StampCard stampsEarned={stampsEarned} />
         </div>
 
+        {/* Watcher Invisible de Tiempo Real */}
+        <RealtimeStampWatcher clientId={clientId} initialStamps={stampsEarned} />
       </div>
     </main>
   );

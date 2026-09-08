@@ -1,11 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { Scanner } from '@yudiel/react-qr-scanner'
 import { CheckCircle, ScanLine } from 'lucide-react'
+import { addStampToClient } from '@/app/actions'
+import confetti from 'canvas-confetti'
+import { toast } from 'sonner'
 
 export default function AdminPage() {
   const [scannedUserId, setScannedUserId] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
   
   return (
     <main className="min-h-screen p-4 flex flex-col items-center">
@@ -54,11 +58,31 @@ export default function AdminPage() {
                   {scannedUserId}
                 </p>
                 
-                {/* Futuro botón para sumar sello */}
+                {/* Botón para sumar sello */}
                 <button
-                  className="w-full bg-white text-black font-bold px-6 py-3.5 rounded-xl hover:bg-gray-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-[0.98] mb-3"
+                  onClick={() => {
+                    startTransition(async () => {
+                      if (scannedUserId) {
+                        try {
+                          await addStampToClient(scannedUserId);
+                          confetti({
+                            particleCount: 100,
+                            spread: 70,
+                            origin: { y: 0.6 },
+                            colors: ['#ffffff', '#22c55e', '#a855f7']
+                          });
+                          toast.success('¡Sello sumado exitosamente!');
+                          setScannedUserId(null); // Resetear para el siguiente escaneo
+                        } catch (error) {
+                          toast.error('Hubo un error al sumar el sello.');
+                        }
+                      }
+                    });
+                  }}
+                  disabled={isPending}
+                  className="w-full bg-white text-black font-bold px-6 py-3.5 rounded-xl hover:bg-gray-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-[0.98] mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Sumar Sello
+                  {isPending ? 'Guardando...' : 'Sumar Sello'}
                 </button>
 
                 <button
