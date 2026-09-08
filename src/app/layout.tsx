@@ -27,6 +27,10 @@ export const metadata: Metadata = {
   title: "Maverick Barbería",
   description: "Sistema de Fidelización Maverick Barbería",
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/icon-192.png",
+  }
 };
 
 export default function RootLayout({
