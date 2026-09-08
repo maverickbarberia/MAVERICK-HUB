@@ -1,17 +1,25 @@
 {
-  "name": "tmp-app",
+  "name": "temp-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
-    "next": "16.2.6",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "@supabase/ssr": "latest",
+    "@supabase/supabase-js": "latest",
+    "@yudiel/react-qr-scanner": "latest",
+    "clsx": "latest",
+    "framer-motion": "^13.2.0",
+    "lucide-react": "latest",
+    "next": "16.3.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-qr-code": "latest",
+    "tailwind-merge": "latest"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -19,7 +27,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.6",
+    "eslint-config-next": "16.3.4",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
