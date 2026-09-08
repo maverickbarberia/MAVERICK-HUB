@@ -63,6 +63,19 @@ export default async function ClientRegisterPage({
                 className="w-full bg-black/40 text-white rounded-xl px-4 py-3 border border-white/10 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all placeholder:text-gray-600"
               />
             </div>
+
+            <div>
+              <label htmlFor="phone_number" className="block text-sm font-medium text-gray-300 mb-1">
+                Número de Celular
+              </label>
+              <input
+                id="phone_number"
+                name="phone_number"
+                type="tel"
+                placeholder="Ej. 3001234567"
+                className="w-full bg-black/40 text-white rounded-xl px-4 py-3 border border-white/10 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all placeholder:text-gray-600"
+              />
+            </div>
           </div>
 
           {params?.message && (

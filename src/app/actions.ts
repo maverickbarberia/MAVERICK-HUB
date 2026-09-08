@@ -54,11 +54,12 @@ export async function registerClientAction(formData: FormData) {
   const supabase = await createClient()
   const documentNumber = formData.get('document_number') as string
   const fullName = formData.get('full_name') as string
+  const phoneNumber = formData.get('phone_number') as string
 
   const { data: newClient, error } = await supabase
     .from('clients')
     .insert([
-      { document_number: documentNumber, full_name: fullName }
+      { document_number: documentNumber, full_name: fullName, phone_number: phoneNumber }
     ])
     .select('id')
     .single()
@@ -96,6 +97,7 @@ export async function createClientFromAdmin(formData: FormData) {
   const supabase = await createClient()
   const documentNumber = formData.get('document_number') as string
   const fullName = formData.get('full_name') as string
+  const phoneNumber = formData.get('phone_number') as string
 
   // Verificar que el admin esté logueado (protección extra)
   const cookieStore = await cookies()
@@ -110,7 +112,7 @@ export async function createClientFromAdmin(formData: FormData) {
   const { error } = await supabase
     .from('clients')
     .insert([
-      { document_number: documentNumber, full_name: fullName }
+      { document_number: documentNumber, full_name: fullName, phone_number: phoneNumber }
     ])
 
   if (error) {
@@ -122,4 +124,104 @@ export async function createClientFromAdmin(formData: FormData) {
 
   revalidatePath('/admin/clients')
   return { success: true }
+}
+
+export async function editClient(formData: FormData) {
+  const supabase = await createClient()
+  const clientId = formData.get('id') as string
+  const documentNumber = formData.get('document_number') as string
+  const fullName = formData.get('full_name') as string
+  const phoneNumber = formData.get('phone_number') as string
+
+  // Verificar que el admin esté logueado (protección extra)
+  const cookieStore = await cookies()
+  const adminId = cookieStore.get('admin_session')?.value
+  // Fallback a supabase auth si el admin sesión falla
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!adminId && !user) {
+    return { error: 'No autorizado' }
+  }
+
+  const { error } = await supabase
+    .from('clients')
+    .update({ document_number: documentNumber, full_name: fullName, phone_number: phoneNumber })
+    .eq('id', clientId)
+
+  if (error) {
+    if (error.code === '23505') {
+      return { error: 'Este documento ya está registrado por otro cliente.' }
+    }
+    return { error: `Error de BD: ${error.message}` }
+  }
+
+  revalidatePath('/admin/clients')
+  revalidatePath(`/admin/clients/${clientId}`)
+  return { success: true }
+}
+
+export async function addStampToClient(clientId: string) {
+  const supabase = await createClient()
+  
+  // Get current stamps
+  const { data: client } = await supabase
+    .from('clients')
+    .select('stamps_earned')
+    .eq('id', clientId)
+    .single()
+    
+  if (client) {
+    await supabase
+      .from('clients')
+      .update({ stamps_earned: client.stamps_earned + 1 })
+      .eq('id', clientId)
+  }
+  
+  revalidatePath('/admin/clients')
+  revalidatePath(`/admin/clients/${clientId}`)
+  revalidatePath('/admin')
+}
+
+export async function removeStampFromClient(clientId: string) {
+  const supabase = await createClient()
+  
+  // Get current stamps
+  const { data: client } = await supabase
+    .from('clients')
+    .select('stamps_earned')
+    .eq('id', clientId)
+    .single()
+    
+  if (client && client.stamps_earned > 0) {
+    await supabase
+      .from('clients')
+      .update({ stamps_earned: client.stamps_earned - 1 })
+      .eq('id', clientId)
+  }
+  
+  revalidatePath('/admin/clients')
+  revalidatePath(`/admin/clients/${clientId}`)
+  revalidatePath('/admin')
+}
+
+export async function redeemFreeCut(clientId: string) {
+  const supabase = await createClient()
+  
+  // Get current stamps
+  const { data: client } = await supabase
+    .from('clients')
+    .select('stamps_earned')
+    .eq('id', clientId)
+    .single()
+    
+  if (client && client.stamps_earned >= 10) {
+    await supabase
+      .from('clients')
+      .update({ stamps_earned: client.stamps_earned - 10 })
+      .eq('id', clientId)
+  }
+  
+  revalidatePath('/admin/clients')
+  revalidatePath(`/admin/clients/${clientId}`)
+  revalidatePath('/admin')
 }

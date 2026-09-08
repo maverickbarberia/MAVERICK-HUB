@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { Search, UserCircle, Crown, Users } from 'lucide-react';
 import { AddClientModal } from '@/components/admin/AddClientModal';
+import { addStampToClient, removeStampFromClient } from '@/app/actions';
 import Link from 'next/link';
 
 export default async function ClientsPage() {
@@ -99,11 +100,18 @@ export default async function ClientsPage() {
                   href={`/admin/clients/${client.id}`}
                   className="flex-1 bg-white/10 hover:bg-white/20 text-white text-sm font-medium py-2 rounded-xl transition-colors text-center inline-block leading-loose"
                 >
-                  Ver Detalles
+                  Detalles
                 </Link>
-                <button className="flex-1 bg-white text-black hover:bg-gray-200 text-sm font-bold py-2 rounded-xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-                  +1 Sello
-                </button>
+                <form action={removeStampFromClient.bind(null, client.id)} className="flex-1 flex">
+                  <button type="submit" className="flex-1 bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white text-sm font-bold py-2 rounded-xl transition-colors">
+                    -1 Sello
+                  </button>
+                </form>
+                <form action={addStampToClient.bind(null, client.id)} className="flex-[1.5] flex">
+                  <button type="submit" className="flex-1 bg-white text-black hover:bg-gray-200 text-sm font-bold py-2 rounded-xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                    +1 Sello
+                  </button>
+                </form>
               </div>
             </div>
           );
