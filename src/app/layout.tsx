@@ -2,8 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'sonner';
-import { InstallPWA } from '@/components/InstallPWA';
-
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -54,7 +52,6 @@ export default function RootLayout({
           {children}
         </div>
         <Toaster theme="dark" position="top-center" />
-        <InstallPWA />
 
         {/* Registro del Service Worker para PWA */}
         <script

@@ -71,11 +71,13 @@ export default async function ClientDetailsPage({ params }: { params: Promise<{ 
             -1 Sello
           </button>
         </form>
-        <form action={addStampToClient.bind(null, id)} className="flex-[1.5] flex">
-          <button type="submit" className="flex-1 bg-white text-black hover:bg-gray-200 text-base font-bold py-3.5 rounded-2xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-[0.98]">
-            +1 Sello
-          </button>
-        </form>
+        {!isFreeCut && (
+          <form action={addStampToClient.bind(null, id)} className="flex-[1.5] flex">
+            <button type="submit" className="flex-1 bg-white text-black hover:bg-gray-200 text-base font-bold py-3.5 rounded-2xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-[0.98]">
+              +1 Sello
+            </button>
+          </form>
+        )}
         {isFreeCut && (
           <form action={redeemFreeCut.bind(null, id)} className="flex-1 flex">
             <button type="submit" className="flex-1 bg-green-500 text-black hover:bg-green-400 text-base font-bold py-3.5 rounded-2xl transition-all shadow-[0_0_20px_rgba(34,197,94,0.2)] active:scale-[0.98]">
