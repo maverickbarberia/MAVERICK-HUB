@@ -173,7 +173,7 @@ export async function addStampToClient(clientId: string) {
   if (client) {
     if (client.stamps_earned >= 10) {
       // No permitir más de 10 sellos
-      return { error: 'Máximo de sellos alcanzado.' }
+      return
     }
     
     await supabase
