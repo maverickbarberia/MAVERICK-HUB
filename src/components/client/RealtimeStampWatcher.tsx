@@ -27,18 +27,55 @@ export function RealtimeStampWatcher({ clientId, initialStamps }: { clientId: st
           
           // Si los sellos aumentaron
           if (newStamps > initialStamps) {
-            // ¡Magia! Lanzar confeti en el dispositivo del cliente
-            confetti({
-              particleCount: 150,
-              spread: 80,
-              origin: { y: 0.5 },
-              colors: ['#ffffff', '#eab308', '#22c55e'] // Blanco, Oro, Verde
-            });
             
-            toast.success('¡Nuevo sello agregado a tu pase!', {
-              description: `Ahora tienes ${newStamps} sellos.`,
-              duration: 5000,
-            });
+            // Lógica para Promociones Alcanzadas (5 o 10 sellos)
+            if (newStamps === 5 || newStamps === 10) {
+              // Animación EXAGERADA de celebración
+              var duration = 3000;
+              var end = Date.now() + duration;
+
+              (function frame() {
+                confetti({
+                  particleCount: 5,
+                  angle: 60,
+                  spread: 55,
+                  origin: { x: 0 },
+                  colors: ['#eab308', '#ffffff']
+                });
+                confetti({
+                  particleCount: 5,
+                  angle: 120,
+                  spread: 55,
+                  origin: { x: 1 },
+                  colors: ['#eab308', '#ffffff']
+                });
+
+                if (Date.now() < end) {
+                  requestAnimationFrame(frame);
+                }
+              }());
+
+              const promoText = newStamps === 5 ? '¡50% DE DESCUENTO!' : '¡CORTE GRATIS!';
+              
+              toast.success(`¡FELICIDADES! 🎉`, {
+                description: `Has alcanzado tu recompensa: ${promoText}`,
+                duration: 8000,
+              });
+
+            } else {
+              // Animación normal para un sello regular
+              confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ffffff', '#22c55e'] 
+              });
+              
+              toast.success('¡Sello sumado!', {
+                description: `Ahora tienes ${newStamps} sellos en tu pase.`,
+                duration: 4000,
+              });
+            }
 
             // Refrescar los datos de la página
             router.refresh();

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'sonner';
 import { InstallPWA } from '@/components/InstallPWA';
@@ -7,6 +7,12 @@ import { InstallPWA } from '@/components/InstallPWA';
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+});
+
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  weight: ["700", "800", "900"],
 });
 
 export const viewport: Viewport = {
@@ -31,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="es" className="dark">
       <body
-        className={`${inter.variable} antialiased bg-[#050505] text-white min-h-screen relative overflow-x-hidden selection:bg-white/30`}
+        className={`${inter.variable} ${montserrat.variable} antialiased bg-[#050505] text-white min-h-screen relative overflow-x-hidden selection:bg-white/30`}
       >
         {/* Fondo Dinámico Global */}
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
