@@ -252,7 +252,7 @@ export async function addStampToClient(clientId: string) {
 
   if (todayStamps && todayStamps.length >= 2) {
     console.error("Límite diario de sellos alcanzado para el cliente:", clientId);
-    return { error: "Límite diario alcanzado" };
+    return;
   }
 
   // Get current stamps
