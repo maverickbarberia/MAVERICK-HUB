@@ -31,9 +31,12 @@ export default async function BarbersPage() {
       </div>
 
       {error ? (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl flex items-center gap-3">
-          <ShieldAlert />
-          <p>La tabla de barberos no existe aún. Por favor crea la tabla <code>team_members</code> en Supabase.</p>
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl flex flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <ShieldAlert />
+            <p className="font-bold">Error cargando datos</p>
+          </div>
+          <p className="text-sm font-mono bg-black/50 p-2 rounded">{error.message}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
