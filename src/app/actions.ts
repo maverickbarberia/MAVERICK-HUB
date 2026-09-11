@@ -160,9 +160,101 @@ export async function editClient(formData: FormData) {
   return { success: true }
 }
 
+export async function addStampWithEvidence(formData: FormData) {
+  const supabase = await createClient()
+  const clientId = formData.get('clientId') as string
+  const barberName = formData.get('barberName') as string
+  const file = formData.get('proofImage') as File
+
+  if (!clientId || !barberName || !file || file.size === 0) {
+    return { error: 'Por favor completa el nombre del barbero y toma una foto de la evidencia.' }
+  }
+
+  // Capa 1: Verificar límite diario (Máximo 2 sellos por día)
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const { data: todayStamps } = await supabase
+    .from('stamp_transactions')
+    .select('id')
+    .eq('client_id', clientId)
+    .eq('action_type', 'ADD')
+    .gte('created_at', startOfDay.toISOString());
+
+  if (todayStamps && todayStamps.length >= 2) {
+    return { error: 'Límite diario alcanzado: Este cliente ya recibió 2 sellos hoy.' };
+  }
+
+  // Get current stamps
+  const { data: client } = await supabase
+    .from('clients')
+    .select('stamps_earned')
+    .eq('id', clientId)
+    .single()
+    
+  if (!client || client.stamps_earned >= 12) {
+    return { error: 'El cliente ya tiene el máximo de sellos.' }
+  }
+
+  // Subir la imagen a Supabase Storage
+  const fileExt = file.name.split('.').pop() || 'jpg'
+  const fileName = `${clientId}-${Date.now()}.${fileExt}`
+  const { error: uploadError } = await supabase.storage
+    .from('payment_proofs')
+    .upload(fileName, file, { contentType: file.type })
+
+  if (uploadError) {
+    return { error: `Error subiendo la foto: ${uploadError.message}` }
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from('payment_proofs')
+    .getPublicUrl(fileName)
+    
+  const proofImageUrl = publicUrlData.publicUrl
+
+  // Actualizar sellos
+  await supabase
+    .from('clients')
+    .update({ stamps_earned: client.stamps_earned + 1 })
+    .eq('id', clientId)
+
+  // Capa 2: Registrar auditoría con evidencia
+  const { data: { user } } = await supabase.auth.getUser()
+  await supabase.from('stamp_transactions').insert({
+    client_id: clientId,
+    admin_id: user?.id || null,
+    action_type: 'ADD',
+    barber_name: barberName,
+    proof_image_url: proofImageUrl
+  })
+  
+  revalidatePath('/admin/clients')
+  revalidatePath(`/admin/clients/${clientId}`)
+  revalidatePath('/admin')
+  
+  return { success: true }
+}
+
 export async function addStampToClient(clientId: string) {
   const supabase = await createClient()
   
+  // Capa 1: Verificar límite diario (Máximo 2 sellos por día)
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const { data: todayStamps } = await supabase
+    .from('stamp_transactions')
+    .select('id')
+    .eq('client_id', clientId)
+    .eq('action_type', 'ADD')
+    .gte('created_at', startOfDay.toISOString());
+
+  if (todayStamps && todayStamps.length >= 2) {
+    console.error("Límite diario de sellos alcanzado para el cliente:", clientId);
+    return { error: "Límite diario alcanzado" };
+  }
+
   // Get current stamps
   const { data: client } = await supabase
     .from('clients')
@@ -180,6 +272,14 @@ export async function addStampToClient(clientId: string) {
       .from('clients')
       .update({ stamps_earned: client.stamps_earned + 1 })
       .eq('id', clientId)
+
+    // Capa 2: Registrar auditoría
+    const { data: { user } } = await supabase.auth.getUser()
+    await supabase.from('stamp_transactions').insert({
+      client_id: clientId,
+      admin_id: user?.id || null,
+      action_type: 'ADD'
+    })
   }
   
   revalidatePath('/admin/clients')
@@ -202,6 +302,14 @@ export async function removeStampFromClient(clientId: string) {
       .from('clients')
       .update({ stamps_earned: client.stamps_earned - 1 })
       .eq('id', clientId)
+
+    // Registrar auditoría
+    const { data: { user } } = await supabase.auth.getUser()
+    await supabase.from('stamp_transactions').insert({
+      client_id: clientId,
+      admin_id: user?.id || null,
+      action_type: 'REMOVE'
+    })
   }
   
   revalidatePath('/admin/clients')
@@ -224,6 +332,14 @@ export async function redeemFreeCut(clientId: string) {
       .from('clients')
       .update({ stamps_earned: client.stamps_earned - 12 })
       .eq('id', clientId)
+
+    // Registrar auditoría
+    const { data: { user } } = await supabase.auth.getUser()
+    await supabase.from('stamp_transactions').insert({
+      client_id: clientId,
+      admin_id: user?.id || null,
+      action_type: 'REDEEM_FREE'
+    })
   }
   
   revalidatePath('/admin/clients')

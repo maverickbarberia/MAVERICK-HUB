@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft, UserCircle, Crown } from 'lucide-react';
 import { addStampToClient, removeStampFromClient, redeemFreeCut } from '@/app/actions';
 import { EditClientModal } from '@/components/admin/EditClientModal';
+import { AddStampModal } from '@/components/admin/AddStampModal';
 import { notFound } from 'next/navigation';
 
 export default async function ClientDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -72,11 +73,7 @@ export default async function ClientDetailsPage({ params }: { params: Promise<{ 
           </button>
         </form>
         {!isFreeCut && (
-          <form action={addStampToClient.bind(null, id)} className="flex-[1.5] flex">
-            <button type="submit" className="flex-1 bg-white text-black hover:bg-gray-200 text-base font-bold py-3.5 rounded-2xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-[0.98]">
-              +1 Sello
-            </button>
-          </form>
+          <AddStampModal clientId={id} />
         )}
         {isFreeCut && (
           <form action={redeemFreeCut.bind(null, id)} className="flex-1 flex">
