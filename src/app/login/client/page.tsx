@@ -10,7 +10,7 @@ export default async function ClientLoginPage({
 }) {
   const params = await searchParams;
   return (
-    <main className="min-h-[100dvh] flex flex-col items-center justify-center p-4">
+    <main className="min-h-dvh flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8 backdrop-blur-2xl bg-white/3 border border-white/8 p-8 sm:p-10 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
         
         <Link 

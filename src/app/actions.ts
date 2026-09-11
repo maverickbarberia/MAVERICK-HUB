@@ -171,8 +171,8 @@ export async function addStampToClient(clientId: string) {
     .single()
     
   if (client) {
-    if (client.stamps_earned >= 10) {
-      // No permitir más de 10 sellos
+    if (client.stamps_earned >= 12) {
+      // No permitir más de 12 sellos
       return
     }
     
@@ -219,10 +219,10 @@ export async function redeemFreeCut(clientId: string) {
     .eq('id', clientId)
     .single()
     
-  if (client && client.stamps_earned >= 10) {
+  if (client && client.stamps_earned >= 12) {
     await supabase
       .from('clients')
-      .update({ stamps_earned: client.stamps_earned - 10 })
+      .update({ stamps_earned: client.stamps_earned - 12 })
       .eq('id', clientId)
   }
   

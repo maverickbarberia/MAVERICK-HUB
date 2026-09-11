@@ -28,8 +28,8 @@ export function RealtimeStampWatcher({ clientId, initialStamps }: { clientId: st
           // Si los sellos aumentaron
           if (newStamps > initialStamps) {
             
-            // Lógica para Promociones Alcanzadas (5 o 10 sellos)
-            if (newStamps === 5 || newStamps === 10) {
+            // Lógica para Promociones Alcanzadas (4, 8 o 12 sellos)
+            if (newStamps === 4 || newStamps === 8 || newStamps === 12) {
               // Animación EXAGERADA de celebración
               const duration = 3000;
               const end = Date.now() + duration;
@@ -40,14 +40,14 @@ export function RealtimeStampWatcher({ clientId, initialStamps }: { clientId: st
                   angle: 60,
                   spread: 55,
                   origin: { x: 0 },
-                  colors: ['#eab308', '#ffffff']
+                  colors: ['#8B9A7B', '#ffffff']
                 });
                 confetti({
                   particleCount: 5,
                   angle: 120,
                   spread: 55,
                   origin: { x: 1 },
-                  colors: ['#eab308', '#ffffff']
+                  colors: ['#8B9A7B', '#ffffff']
                 });
 
                 if (Date.now() < end) {
@@ -55,7 +55,7 @@ export function RealtimeStampWatcher({ clientId, initialStamps }: { clientId: st
                 }
               }());
 
-              const promoText = newStamps === 5 ? '¡15% DE DESCUENTO!' : '¡CORTE GRATIS!';
+              const promoText = newStamps === 12 ? '¡CORTE GRATIS!' : '¡50% DE DESCUENTO!';
               
               toast.success(`¡FELICIDADES! 🎉`, {
                 description: `Has alcanzado tu recompensa: ${promoText}`,

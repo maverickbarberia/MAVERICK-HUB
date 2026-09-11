@@ -33,7 +33,7 @@ export default async function DashboardPage() {
   const stampsEarned = profile.stamps_earned || 0;
 
   return (
-    <main className="min-h-[100dvh] p-4 flex flex-col items-center">
+    <main className="min-h-dvh p-4 flex flex-col items-center">
       <div className="w-full max-w-md pt-8 space-y-6">
         
         {/* Cabecera del Usuario con Glassmorphism */}
@@ -75,10 +75,10 @@ export default async function DashboardPage() {
         </div>
 
         {/* Mensaje de Promoción Cercana */}
-        {(stampsEarned === 4 || stampsEarned === 9) && (
-          <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-200 p-4 rounded-2xl flex items-center justify-center text-center animate-pulse shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+        {(stampsEarned === 3 || stampsEarned === 7 || stampsEarned === 11) && (
+          <div className="bg-[#8B9A7B]/20 border border-[#8B9A7B]/50 text-[#C5D8AD] p-4 rounded-2xl flex items-center justify-center text-center animate-pulse shadow-[0_0_15px_rgba(139,154,123,0.3)]">
             <p className="font-bold text-sm tracking-wide uppercase">
-              ¡Estás a 1 sello de tu {stampsEarned === 4 ? '15% DE DESCUENTO' : 'CORTE GRATIS'}!
+              ¡Estás a 1 sello de tu {stampsEarned === 11 ? 'CORTE GRATIS' : '50% DE DESCUENTO'}!
             </p>
           </div>
         )}

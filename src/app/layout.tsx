@@ -39,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="es" className="dark">
       <body
-        className={`${inter.variable} ${montserrat.variable} antialiased bg-[#050505] text-white min-h-[100dvh] relative overflow-x-clip selection:bg-white/30`}
+        className={`${inter.variable} ${montserrat.variable} antialiased bg-[#050505] text-white min-h-dvh relative overflow-x-clip selection:bg-white/30`}
       >
         {/* Fondo Dinámico Global */}
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
@@ -48,7 +48,7 @@ export default function RootLayout({
         </div>
         
         {/* Contenido de la Aplicación */}
-        <div className="relative z-10 w-full min-h-[100dvh]">
+        <div className="relative z-10 w-full min-h-dvh">
           {children}
         </div>
         <Toaster theme="dark" position="top-center" />

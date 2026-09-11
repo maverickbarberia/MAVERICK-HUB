@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 
 export default function Home() {
   return (
-    <main className="min-h-[100dvh] flex flex-col items-center justify-center p-4 relative z-10 overflow-x-clip">
+    <main className="min-h-dvh flex flex-col items-center justify-center p-4 relative z-10 overflow-x-clip">
       
       {/* Luz de fondo sutil y dinámica */}
       <motion.div 
@@ -24,16 +24,19 @@ export default function Home() {
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-12"
+          className="mb-4 w-full flex justify-center"
         >
-          <Image 
-            src="/logo-full.png" 
-            alt="MAVERICK Logo" 
-            width={300} 
-            height={100} 
-            className="w-64 sm:w-72 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-            priority
-          />
+          <div className="relative w-[85vw] max-w-[320px] sm:max-w-[360px] h-[140px] sm:h-[180px] overflow-hidden flex items-center justify-center">
+            <video 
+              src="/promo.mp4" 
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+              style={{ WebkitTransform: "translateZ(0)" }} // Fix for some iOS Safari rendering issues
+              className="absolute w-full h-full object-cover object-center mix-blend-screen drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] pointer-events-none"
+            />
+          </div>
         </motion.div>
 
         {/* Línea Separadora Minimalista */}
@@ -41,7 +44,7 @@ export default function Home() {
           initial={{ scaleX: 0, opacity: 0 }}
           animate={{ scaleX: 1, opacity: 1 }}
           transition={{ duration: 1, delay: 0.3, ease: "easeInOut" }}
-          className="w-32 h-px bg-linear-to-r from-transparent via-white/30 to-transparent mb-12"
+          className="w-32 h-px bg-linear-to-r from-transparent via-white/30 to-transparent mb-8"
         />
 
         {/* Botones de Acceso */}
