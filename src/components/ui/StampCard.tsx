@@ -155,56 +155,52 @@ export function StampCard({ stampsEarned, clientId, transactions = [], isAdmin =
       {/* Modal Detalles del Sello */}
       <AnimatePresence>
         {selectedTx && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedTx(null)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-sm bg-zinc-900 border border-white/10 rounded-3xl p-6 shadow-2xl overflow-hidden"
+          <div className="fixed inset-0 z-[100] bg-[#0a0a0a] overflow-y-auto overflow-x-hidden">
+            <motion.div 
+              initial={{ opacity: 0, y: '100%' }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: '100%' }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="min-h-full w-full max-w-md mx-auto bg-[#0a0a0a] flex flex-col"
             >
-              <button 
-                onClick={() => setSelectedTx(null)}
-                className="absolute top-4 right-4 p-2 bg-white/5 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors"
-              >
-                <X size={20} />
-              </button>
+              <div className="flex justify-between items-center p-4 sm:p-5 border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-md sticky top-0 z-10">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  Detalles del Sello
+                </h3>
+                <button 
+                  onClick={() => setSelectedTx(null)}
+                  className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-full transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
 
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-white mb-1">Detalles del Sello</h3>
+              <div className="flex-1 w-full pb-8 p-4 sm:p-6 space-y-6">
                 <p className="text-sm text-gray-400 flex items-center gap-2">
-                  <Calendar size={14} />
+                  <Calendar size={16} className="text-white/50" />
                   {new Intl.DateTimeFormat('es-CO', { 
                     dateStyle: 'long', 
                     timeStyle: 'short' 
                   }).format(new Date(selectedTx.created_at))}
                 </p>
-              </div>
 
-              <div className="space-y-4 mb-8">
                 <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center gap-3">
                   <div className="p-2 bg-white/10 rounded-full text-white">
                     <User size={20} />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 uppercase tracking-wider">Barbero</p>
-                    <p className="text-white font-medium">{selectedTx.barber_name || 'N/A'}</p>
+                    <p className="text-xs text-gray-400 uppercase tracking-wider">Barbero que atendió</p>
+                    <p className="text-white font-medium text-lg">{selectedTx.barber_name || 'N/A'}</p>
                   </div>
                 </div>
 
                 <div className="bg-white/5 border border-white/5 rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <ImageIcon size={16} className="text-gray-400" />
-                    <p className="text-xs text-gray-400 uppercase tracking-wider">Evidencia</p>
+                    <p className="text-xs text-gray-400 uppercase tracking-wider">Evidencia Fotográfica</p>
                   </div>
                   {selectedTx.proof_image_url ? (
-                    <a href={selectedTx.proof_image_url} target="_blank" rel="noopener noreferrer" className="block relative aspect-[3/4] w-full max-h-[40vh] rounded-xl overflow-hidden border border-white/10 group cursor-pointer bg-black/40">
+                    <a href={selectedTx.proof_image_url} target="_blank" rel="noopener noreferrer" className="block relative aspect-[3/4] w-full rounded-2xl overflow-hidden border border-white/10 group cursor-pointer bg-black/40 shadow-inner">
                       <Image 
                         src={selectedTx.proof_image_url} 
                         alt="Evidencia" 
@@ -221,20 +217,22 @@ export function StampCard({ stampsEarned, clientId, transactions = [], isAdmin =
                     </div>
                   )}
                 </div>
-              </div>
 
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isDeleting ? 'Borrando...' : (
-                  <>
-                    <Trash2 size={18} />
-                    <span>Eliminar este sello</span>
-                  </>
-                )}
-              </button>
+                <div className="pt-4">
+                  <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isDeleting ? 'Borrando...' : (
+                      <>
+                        <Trash2 size={20} />
+                        <span>Eliminar este sello</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             </motion.div>
           </div>
         )}
