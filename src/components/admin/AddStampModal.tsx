@@ -110,7 +110,7 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
                 </button>
               </div>
 
-              <div className="overflow-y-auto min-h-0 w-full">
+              <div className="overflow-y-auto flex-1 min-h-0 w-full">
                 <form ref={formRef} onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-5">
                   <input type="hidden" name="clientId" value={clientId} />
                 
@@ -145,7 +145,7 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-300 ml-1">Foto del Comprobante</label>
                     
-                    <div className="relative w-full aspect-[3/4] bg-black border-2 border-dashed border-white/20 rounded-2xl overflow-hidden group hover:border-white/40 transition-colors">
+                    <div className="relative w-full h-48 bg-black border-2 border-dashed border-white/20 rounded-2xl overflow-hidden group hover:border-white/40 transition-colors">
                       {previewUrl ? (
                         <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
                       ) : (

@@ -28,7 +28,11 @@ export function StampCard({ stampsEarned, clientId, transactions = [], isAdmin =
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleStampClick = (index: number, isEarned: boolean) => {
-    if (!isAdmin || !isEarned || !transactions[index]) return;
+    if (!isAdmin || !isEarned) return;
+    if (!transactions[index]) {
+      alert("Este sello es anterior al nuevo sistema fotográfico. Para modificar sellos antiguos o corregir conteos por favor comunícate con soporte o ajusta el total manualmente en la base de datos.");
+      return;
+    }
     setSelectedTx(transactions[index]);
   };
 
