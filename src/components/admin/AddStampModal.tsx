@@ -89,14 +89,15 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
 
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] bg-[#0a0a0a] overflow-y-auto overflow-x-hidden">
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#111] border border-white/10 w-full max-w-sm max-h-[85dvh] rounded-3xl shadow-2xl relative flex flex-col overflow-hidden"
+              initial={{ opacity: 0, y: '100%' }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: '100%' }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="min-h-full w-full max-w-md mx-auto bg-[#0a0a0a] flex flex-col"
             >
-              <div className="flex justify-between items-center p-4 sm:p-5 border-b border-white/10 bg-white/5 shrink-0">
+              <div className="flex justify-between items-center p-4 sm:p-5 border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-md sticky top-0 z-10">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <Camera size={20} className="text-green-400" />
                   Evidencia de Pago
@@ -110,8 +111,8 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
                 </button>
               </div>
 
-              <div className="overflow-y-auto flex-1 min-h-0 w-full">
-                <form ref={formRef} onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-5">
+              <div className="flex-1 w-full pb-8">
+                <form ref={formRef} onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5">
                   <input type="hidden" name="clientId" value={clientId} />
                 
                   {error && (
@@ -145,7 +146,7 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-300 ml-1">Foto del Comprobante</label>
                     
-                    <div className="relative w-full h-48 bg-black border-2 border-dashed border-white/20 rounded-2xl overflow-hidden group hover:border-white/40 transition-colors">
+                    <div className="relative w-full h-56 bg-black border-2 border-dashed border-white/20 rounded-2xl overflow-hidden group hover:border-white/40 transition-colors">
                       {previewUrl ? (
                         <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
                       ) : (
@@ -167,7 +168,7 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
                     </div>
                   </div>
 
-                  <div className="pt-4">
+                  <div className="pt-6">
                     <button 
                       type="submit" 
                       disabled={isPending}
