@@ -226,8 +226,8 @@ export async function addStampWithFormData(formData: FormData) {
       
     const proofImageUrl = publicUrlData.publicUrl
 
-    // Actualizar sellos (Bypass RLS para asegurar que funcione)
-    const { error: updateError } = await supabaseAdmin
+    // Actualizar sellos
+    const { error: updateError } = await supabase
       .from('clients')
       .update({ stamps_earned: client.stamps_earned + 1 })
       .eq('id', clientId)
@@ -236,9 +236,9 @@ export async function addStampWithFormData(formData: FormData) {
       return { error: `Error actualizando cliente: ${updateError.message}` }
     }
 
-    // Capa 2: Registrar auditoría con evidencia (Bypass RLS)
+    // Capa 2: Registrar auditoría con evidencia
     const { data: { user } } = await supabase.auth.getUser()
-    const { error: auditError } = await supabaseAdmin.from('stamp_transactions').insert({
+    const { error: auditError } = await supabase.from('stamp_transactions').insert({
       client_id: clientId,
       admin_id: user?.id || null,
       action_type: 'ADD',
@@ -274,7 +274,7 @@ export async function addStampToClient(clientId: string) {
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
 
-  const { data: todayStamps } = await supabaseAdmin
+  const { data: todayStamps } = await supabase
     .from('stamp_transactions')
     .select('id')
     .eq('client_id', clientId)
@@ -287,7 +287,7 @@ export async function addStampToClient(clientId: string) {
   }
 
   // Get current stamps
-  const { data: client } = await supabaseAdmin
+  const { data: client } = await supabase
     .from('clients')
     .select('stamps_earned')
     .eq('id', clientId)
@@ -299,14 +299,14 @@ export async function addStampToClient(clientId: string) {
       return
     }
     
-    await supabaseAdmin
+    await supabase
       .from('clients')
       .update({ stamps_earned: client.stamps_earned + 1 })
       .eq('id', clientId)
 
     // Capa 2: Registrar auditoría
     const { data: { user } } = await supabase.auth.getUser()
-    await supabaseAdmin.from('stamp_transactions').insert({
+    await supabase.from('stamp_transactions').insert({
       client_id: clientId,
       admin_id: user?.id || null,
       action_type: 'ADD'
@@ -326,7 +326,7 @@ export async function deleteStampTransaction(transactionId: string, clientId: st
   )
   
   // 1. Get transaction info
-  const { data: tx } = await supabaseAdmin
+  const { data: tx } = await supabase
     .from('stamp_transactions')
     .select('proof_image_url')
     .eq('id', transactionId)
@@ -337,20 +337,20 @@ export async function deleteStampTransaction(transactionId: string, clientId: st
   }
 
   // 2. Delete transaction from DB
-  await supabaseAdmin
+  await supabase
     .from('stamp_transactions')
     .delete()
     .eq('id', transactionId)
 
   // 3. Decrement stamps_earned
-  const { data: client } = await supabaseAdmin
+  const { data: client } = await supabase
     .from('clients')
     .select('stamps_earned')
     .eq('id', clientId)
     .single()
     
   if (client && client.stamps_earned > 0) {
-    await supabaseAdmin
+    await supabase
       .from('clients')
       .update({ stamps_earned: client.stamps_earned - 1 })
       .eq('id', clientId)
@@ -385,21 +385,21 @@ export async function redeemFreeCut(clientId: string) {
   )
   
   // Get current stamps
-  const { data: client } = await supabaseAdmin
+  const { data: client } = await supabase
     .from('clients')
     .select('stamps_earned')
     .eq('id', clientId)
     .single()
     
   if (client && client.stamps_earned >= 12) {
-    await supabaseAdmin
+    await supabase
       .from('clients')
       .update({ stamps_earned: client.stamps_earned - 12 })
       .eq('id', clientId)
 
     // Registrar auditoría
     const { data: { user } } = await supabase.auth.getUser()
-    await supabaseAdmin.from('stamp_transactions').insert({
+    await supabase.from('stamp_transactions').insert({
       client_id: clientId,
       admin_id: user?.id || null,
       action_type: 'REDEEM_FREE'
