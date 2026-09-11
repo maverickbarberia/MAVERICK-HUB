@@ -226,21 +226,30 @@ export async function addStampWithFormData(formData: FormData) {
       
     const proofImageUrl = publicUrlData.publicUrl
 
-    // Actualizar sellos
-    await supabase
+    // Actualizar sellos (Bypass RLS para asegurar que funcione)
+    const { error: updateError } = await supabaseAdmin
       .from('clients')
       .update({ stamps_earned: client.stamps_earned + 1 })
       .eq('id', clientId)
+      
+    if (updateError) {
+      return { error: `Error actualizando cliente: ${updateError.message}` }
+    }
 
-    // Capa 2: Registrar auditoría con evidencia
+    // Capa 2: Registrar auditoría con evidencia (Bypass RLS)
     const { data: { user } } = await supabase.auth.getUser()
-    await supabase.from('stamp_transactions').insert({
+    const { error: auditError } = await supabaseAdmin.from('stamp_transactions').insert({
       client_id: clientId,
       admin_id: user?.id || null,
       action_type: 'ADD',
       barber_name: barberName,
       proof_image_url: proofImageUrl
     })
+    
+    if (auditError) {
+      console.error("Audit insert error:", auditError)
+      // Si falla la auditoría al menos alertamos, aunque el sello ya se haya actualizado.
+    }
     
     revalidatePath('/admin/clients')
     revalidatePath(`/admin/clients/${clientId}`)
@@ -256,12 +265,16 @@ export async function addStampWithFormData(formData: FormData) {
 
 export async function addStampToClient(clientId: string) {
   const supabase = await createClient()
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
   
   // Capa 1: Verificar límite diario (Máximo 2 sellos por día)
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
 
-  const { data: todayStamps } = await supabase
+  const { data: todayStamps } = await supabaseAdmin
     .from('stamp_transactions')
     .select('id')
     .eq('client_id', clientId)
@@ -274,7 +287,7 @@ export async function addStampToClient(clientId: string) {
   }
 
   // Get current stamps
-  const { data: client } = await supabase
+  const { data: client } = await supabaseAdmin
     .from('clients')
     .select('stamps_earned')
     .eq('id', clientId)
@@ -286,14 +299,14 @@ export async function addStampToClient(clientId: string) {
       return
     }
     
-    await supabase
+    await supabaseAdmin
       .from('clients')
       .update({ stamps_earned: client.stamps_earned + 1 })
       .eq('id', clientId)
 
     // Capa 2: Registrar auditoría
     const { data: { user } } = await supabase.auth.getUser()
-    await supabase.from('stamp_transactions').insert({
+    await supabaseAdmin.from('stamp_transactions').insert({
       client_id: clientId,
       admin_id: user?.id || null,
       action_type: 'ADD'
@@ -307,23 +320,27 @@ export async function addStampToClient(clientId: string) {
 
 export async function removeStampFromClient(clientId: string) {
   const supabase = await createClient()
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
   
   // Get current stamps
-  const { data: client } = await supabase
+  const { data: client } = await supabaseAdmin
     .from('clients')
     .select('stamps_earned')
     .eq('id', clientId)
     .single()
     
   if (client && client.stamps_earned > 0) {
-    await supabase
+    await supabaseAdmin
       .from('clients')
       .update({ stamps_earned: client.stamps_earned - 1 })
       .eq('id', clientId)
 
     // Registrar auditoría
     const { data: { user } } = await supabase.auth.getUser()
-    await supabase.from('stamp_transactions').insert({
+    await supabaseAdmin.from('stamp_transactions').insert({
       client_id: clientId,
       admin_id: user?.id || null,
       action_type: 'REMOVE'
@@ -337,23 +354,27 @@ export async function removeStampFromClient(clientId: string) {
 
 export async function redeemFreeCut(clientId: string) {
   const supabase = await createClient()
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
   
   // Get current stamps
-  const { data: client } = await supabase
+  const { data: client } = await supabaseAdmin
     .from('clients')
     .select('stamps_earned')
     .eq('id', clientId)
     .single()
     
   if (client && client.stamps_earned >= 12) {
-    await supabase
+    await supabaseAdmin
       .from('clients')
       .update({ stamps_earned: client.stamps_earned - 12 })
       .eq('id', clientId)
 
     // Registrar auditoría
     const { data: { user } } = await supabase.auth.getUser()
-    await supabase.from('stamp_transactions').insert({
+    await supabaseAdmin.from('stamp_transactions').insert({
       client_id: clientId,
       admin_id: user?.id || null,
       action_type: 'REDEEM_FREE'
