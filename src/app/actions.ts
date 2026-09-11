@@ -247,9 +247,10 @@ export async function addStampWithFormData(formData: FormData) {
     revalidatePath('/admin')
     
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in addStampWithFormData:", error);
-    return { error: `Error interno del servidor: ${error.message}` };
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return { error: `Error interno del servidor: ${errorMessage}` };
   }
 }
 

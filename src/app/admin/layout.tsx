@@ -81,7 +81,7 @@ export default function AdminLayout({
       </main>
 
       {/* Bottom Nav para Móviles (Celulares) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 min-h-[5rem] pb-[env(safe-area-inset-bottom,0px)] pt-2 backdrop-blur-2xl bg-black/80 border-t border-white/10 z-50 px-4 sm:px-6 flex items-center justify-around">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 min-h-20 pb-[env(safe-area-inset-bottom,0px)] pt-2 backdrop-blur-2xl bg-black/80 border-t border-white/10 z-50 px-4 sm:px-6 flex items-center justify-around">
         {navItems.map((item) => (
           <Link 
             key={item.href} 

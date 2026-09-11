@@ -26,7 +26,7 @@ export default function Home() {
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           className="mb-4 w-full flex justify-center"
         >
-          <div className="relative w-[85vw] max-w-[320px] sm:max-w-[360px] h-[140px] sm:h-[180px] overflow-hidden flex items-center justify-center">
+          <div className="relative w-[85vw] max-w-[320px] sm:max-w-90 h-35 sm:h-45 overflow-hidden flex items-center justify-center">
             <video 
               src="/promo.mp4" 
               autoPlay 
