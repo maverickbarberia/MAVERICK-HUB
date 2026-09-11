@@ -87,7 +87,7 @@ export function StampCard({ stampsEarned, clientId, transactions = [], isAdmin =
               const isFreeCut = stampNumber === 12;
               const isSpecial = isDiscount || isFreeCut;
               
-              const isClickable = isAdmin && isEarned && transactions[index];
+              const isClickable = isAdmin && isEarned;
 
               return (
                 <motion.button
