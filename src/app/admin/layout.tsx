@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { ScanLine, Users, BarChart3, LogOut, Home, ClipboardList } from 'lucide-react';
+import { ScanLine, Users, BarChart3, LogOut, Home } from 'lucide-react';
 import { signout } from '@/app/actions';
 
 export default function AdminLayout({
@@ -12,7 +12,6 @@ export default function AdminLayout({
     { name: 'Inicio', href: '/admin', icon: <Home size={24} /> },
     { name: 'Escáner', href: '/admin/scanner', icon: <ScanLine size={24} /> },
     { name: 'Personas', href: '/admin/clients', icon: <Users size={24} /> },
-    { name: 'Auditoría', href: '/admin/audit', icon: <ClipboardList size={24} /> },
     // Analytics is disabled for now, but ready for future implementation
     // { name: 'Métricas', href: '/admin/analytics', icon: <BarChart3 size={24} /> },
   ];

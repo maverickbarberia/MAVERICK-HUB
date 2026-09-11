@@ -318,14 +318,31 @@ export async function addStampToClient(clientId: string) {
   revalidatePath('/admin')
 }
 
-export async function removeStampFromClient(clientId: string) {
+export async function deleteStampTransaction(transactionId: string, clientId: string) {
   const supabase = await createClient()
   const supabaseAdmin = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
   
-  // Get current stamps
+  // 1. Get transaction info
+  const { data: tx } = await supabaseAdmin
+    .from('stamp_transactions')
+    .select('proof_image_url')
+    .eq('id', transactionId)
+    .single()
+    
+  if (!tx) {
+    return { error: 'Transacción no encontrada' }
+  }
+
+  // 2. Delete transaction from DB
+  await supabaseAdmin
+    .from('stamp_transactions')
+    .delete()
+    .eq('id', transactionId)
+
+  // 3. Decrement stamps_earned
   const { data: client } = await supabaseAdmin
     .from('clients')
     .select('stamps_earned')
@@ -337,19 +354,27 @@ export async function removeStampFromClient(clientId: string) {
       .from('clients')
       .update({ stamps_earned: client.stamps_earned - 1 })
       .eq('id', clientId)
+  }
 
-    // Registrar auditoría
-    const { data: { user } } = await supabase.auth.getUser()
-    await supabaseAdmin.from('stamp_transactions').insert({
-      client_id: clientId,
-      admin_id: user?.id || null,
-      action_type: 'REMOVE'
-    })
+  // 4. (Opcional) Intentar borrar la imagen del bucket si existía
+  if (tx.proof_image_url) {
+    try {
+      const url = new URL(tx.proof_image_url)
+      const parts = url.pathname.split('/payment_proofs/')
+      if (parts.length > 1) {
+        const filePath = parts[1]
+        await supabaseAdmin.storage.from('payment_proofs').remove([filePath])
+      }
+    } catch (e) {
+      console.error("Error al borrar imagen:", e)
+    }
   }
   
   revalidatePath('/admin/clients')
   revalidatePath(`/admin/clients/${clientId}`)
   revalidatePath('/admin')
+  
+  return { success: true }
 }
 
 export async function redeemFreeCut(clientId: string) {
