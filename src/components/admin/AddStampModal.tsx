@@ -116,9 +116,9 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#111] border border-white/10 w-full max-w-sm max-h-[90dvh] rounded-3xl shadow-2xl relative flex flex-col"
+              className="bg-[#111] border border-white/10 w-full max-w-sm max-h-[85dvh] rounded-3xl shadow-2xl relative flex flex-col overflow-hidden"
             >
-              <div className="flex justify-between items-center p-5 border-b border-white/10 bg-white/5 shrink-0">
+              <div className="flex justify-between items-center p-4 sm:p-5 border-b border-white/10 bg-white/5 shrink-0">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <Camera size={20} className="text-green-400" />
                   Evidencia de Pago
@@ -133,7 +133,7 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
               </div>
 
               <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-                <div className="overflow-y-auto p-6 scroll-smooth space-y-5 flex-1">
+                <div className="overflow-y-auto p-4 sm:p-6 scroll-smooth space-y-4 sm:space-y-5 flex-1">
                   <input type="hidden" name="clientId" value={clientId} />
                 
                 {error && (
@@ -190,7 +190,7 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
                 </div>
               </div>
 
-              <div className="p-5 border-t border-white/10 bg-[#111] shrink-0">
+              <div className="p-4 sm:p-5 border-t border-white/10 bg-black shrink-0">
                   <button 
                     type="submit" 
                     disabled={isPending}
