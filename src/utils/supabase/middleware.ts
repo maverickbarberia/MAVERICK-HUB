@@ -51,18 +51,17 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Redirigir a usuarios logueados lejos de las rutas de auth
-  if (isAuthRoute) {
-    if (isAdminLogged) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/admin'
-      return NextResponse.redirect(url)
-    }
-    if (isClientLogged) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/dashboard'
-      return NextResponse.redirect(url)
-    }
+  // Redirigir a usuarios logueados lejos de SUS RESPECTIVAS rutas de auth
+  if (pathname.startsWith('/login/admin') && isAdminLogged) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/admin'
+    return NextResponse.redirect(url)
+  }
+  
+  if ((pathname.startsWith('/login/client') || pathname.startsWith('/register')) && isClientLogged) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
   }
 
   // Proteger la ruta de administrador
