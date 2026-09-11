@@ -163,85 +163,94 @@ export async function editClient(formData: FormData) {
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 export async function addStampWithFormData(formData: FormData) {
-  const supabase = await createClient() // Para autenticación normal (admin)
-  const clientId = formData.get('clientId') as string
-  const barberName = formData.get('barberName') as string
-  const file = formData.get('proofImage') as File
+  try {
+    const supabase = await createClient() // Para autenticación normal (admin)
+    const clientId = formData.get('clientId') as string
+    const barberName = formData.get('barberName') as string
+    const file = formData.get('proofImage') as File
 
-  if (!clientId || !barberName || !file || file.size === 0) {
-    return { error: 'Faltan datos requeridos (Cliente, Barbero o Foto).' }
-  }
+    if (!clientId || !barberName || !file || file.size === 0) {
+      return { error: 'Faltan datos requeridos (Cliente, Barbero o Foto).' }
+    }
 
-  // Capa 1: Verificar límite diario (Máximo 2 sellos por día)
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
+    // Capa 1: Verificar límite diario (Máximo 2 sellos por día)
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
 
-  const { data: todayStamps } = await supabase
-    .from('stamp_transactions')
-    .select('id')
-    .eq('client_id', clientId)
-    .eq('action_type', 'ADD')
-    .gte('created_at', startOfDay.toISOString());
+    const { data: todayStamps } = await supabase
+      .from('stamp_transactions')
+      .select('id')
+      .eq('client_id', clientId)
+      .eq('action_type', 'ADD')
+      .gte('created_at', startOfDay.toISOString());
 
-  if (todayStamps && todayStamps.length >= 2) {
-    return { error: 'Límite diario alcanzado: Este cliente ya recibió 2 sellos hoy.' };
-  }
+    if (todayStamps && todayStamps.length >= 2) {
+      return { error: 'Límite diario alcanzado: Este cliente ya recibió 2 sellos hoy.' };
+    }
 
-  // Get current stamps
-  const { data: client } = await supabase
-    .from('clients')
-    .select('stamps_earned')
-    .eq('id', clientId)
-    .single()
+    // Get current stamps
+    const { data: client } = await supabase
+      .from('clients')
+      .select('stamps_earned')
+      .eq('id', clientId)
+      .single()
+      
+    if (!client || client.stamps_earned >= 12) {
+      return { error: 'El cliente ya tiene el máximo de sellos.' }
+    }
+
+    // Crear cliente Admin para bypass RLS de Storage
+    const supabaseAdmin = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    const fileExt = file.name.split('.').pop() || 'jpg'
+    const fileName = `${clientId}-${Date.now()}.${fileExt}`
     
-  if (!client || client.stamps_earned >= 12) {
-    return { error: 'El cliente ya tiene el máximo de sellos.' }
-  }
-
-  // Crear cliente Admin para bypass RLS de Storage
-  const supabaseAdmin = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-
-  const fileExt = file.name.split('.').pop() || 'jpg'
-  const fileName = `${clientId}-${Date.now()}.${fileExt}`
-  
-  const { error: uploadError } = await supabaseAdmin.storage
-    .from('payment_proofs')
-    .upload(fileName, file, { contentType: file.type })
-
-  if (uploadError) {
-    return { error: `Error subiendo foto al servidor: ${uploadError.message}` }
-  }
-
-  const { data: publicUrlData } = supabaseAdmin.storage
-    .from('payment_proofs')
-    .getPublicUrl(fileName)
+    // Convertir el archivo a Buffer para evitar errores de compatibilidad en Server Actions
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
     
-  const proofImageUrl = publicUrlData.publicUrl
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from('payment_proofs')
+      .upload(fileName, buffer, { contentType: file.type })
 
-  // Actualizar sellos
-  await supabase
-    .from('clients')
-    .update({ stamps_earned: client.stamps_earned + 1 })
-    .eq('id', clientId)
+    if (uploadError) {
+      return { error: `Error subiendo foto al servidor: ${uploadError.message}` }
+    }
 
-  // Capa 2: Registrar auditoría con evidencia
-  const { data: { user } } = await supabase.auth.getUser()
-  await supabase.from('stamp_transactions').insert({
-    client_id: clientId,
-    admin_id: user?.id || null,
-    action_type: 'ADD',
-    barber_name: barberName,
-    proof_image_url: proofImageUrl
-  })
-  
-  revalidatePath('/admin/clients')
-  revalidatePath(`/admin/clients/${clientId}`)
-  revalidatePath('/admin')
-  
-  return { success: true }
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from('payment_proofs')
+      .getPublicUrl(fileName)
+      
+    const proofImageUrl = publicUrlData.publicUrl
+
+    // Actualizar sellos
+    await supabase
+      .from('clients')
+      .update({ stamps_earned: client.stamps_earned + 1 })
+      .eq('id', clientId)
+
+    // Capa 2: Registrar auditoría con evidencia
+    const { data: { user } } = await supabase.auth.getUser()
+    await supabase.from('stamp_transactions').insert({
+      client_id: clientId,
+      admin_id: user?.id || null,
+      action_type: 'ADD',
+      barber_name: barberName,
+      proof_image_url: proofImageUrl
+    })
+    
+    revalidatePath('/admin/clients')
+    revalidatePath(`/admin/clients/${clientId}`)
+    revalidatePath('/admin')
+    
+    return { success: true }
+  } catch (error: any) {
+    console.error("Error in addStampWithFormData:", error);
+    return { error: `Error interno del servidor: ${error.message}` };
+  }
 }
 
 export async function addStampToClient(clientId: string) {
