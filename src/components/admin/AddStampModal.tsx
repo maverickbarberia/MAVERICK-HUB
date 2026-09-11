@@ -132,12 +132,12 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
                 </button>
               </div>
 
-              <div className="overflow-y-auto p-6 scroll-smooth">
-                <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
+              <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+                <div className="overflow-y-auto p-6 scroll-smooth space-y-5 flex-1">
                   <input type="hidden" name="clientId" value={clientId} />
                 
                 {error && (
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl text-sm flex items-start gap-2">
+                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl text-sm flex items-start gap-2 shrink-0">
                     <AlertCircle size={18} className="shrink-0 mt-0.5" />
                     <p>{error}</p>
                   </div>
@@ -188,23 +188,25 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
                     />
                   </div>
                 </div>
+              </div>
 
-                <button 
-                  type="submit" 
-                  disabled={isPending}
-                  className="w-full bg-white text-black hover:bg-gray-200 text-lg font-bold py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
-                >
-                  {isPending ? (
-                    <>
-                      <Loader2 size={20} className="animate-spin" />
-                      Guardando...
-                    </>
-                  ) : (
-                    'Registrar Sello'
-                  )}
-                </button>
+              <div className="p-5 border-t border-white/10 bg-[#111] shrink-0">
+                  <button 
+                    type="submit" 
+                    disabled={isPending}
+                    className="w-full bg-white text-black hover:bg-gray-200 text-lg font-bold py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isPending ? (
+                      <>
+                        <Loader2 size={20} className="animate-spin" />
+                        Guardando...
+                      </>
+                    ) : (
+                      'Registrar Sello'
+                    )}
+                  </button>
+                </div>
               </form>
-            </div>
             </motion.div>
           </div>
         )}
