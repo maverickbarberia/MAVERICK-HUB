@@ -201,11 +201,10 @@ export function StampCard({ stampsEarned, clientId, transactions = [], isAdmin =
                   </div>
                   {selectedTx.proof_image_url ? (
                     <a href={selectedTx.proof_image_url} target="_blank" rel="noopener noreferrer" className="block relative aspect-[3/4] w-full rounded-2xl overflow-hidden border border-white/10 group cursor-pointer bg-black/40 shadow-inner">
-                      <Image 
+                      <img 
                         src={selectedTx.proof_image_url} 
                         alt="Evidencia" 
-                        fill 
-                        className="object-contain" 
+                        className="w-full h-full object-contain" 
                       />
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <span className="text-white text-sm font-medium bg-black/60 px-4 py-2 rounded-full backdrop-blur-md">Ampliar Foto</span>
