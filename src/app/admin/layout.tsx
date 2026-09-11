@@ -62,9 +62,9 @@ export default function AdminLayout({
       </aside>
 
       {/* Contenido Principal */}
-      <main className="flex-1 overflow-y-auto pb-24 md:pb-0 h-full scroll-smooth">
+      <main className="flex-1 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-0 h-full scroll-smooth">
         {/* En Móvil, mostramos un pequeño header central */}
-        <div className="md:hidden flex justify-center items-center py-6 backdrop-blur-md bg-black/40 border-b border-white/5 sticky top-0 z-20">
+        <div className="md:hidden flex justify-center items-center pb-4 pt-[max(env(safe-area-inset-top,0px),1.5rem)] backdrop-blur-md bg-black/40 border-b border-white/5 sticky top-0 z-20">
            <Image 
             src="/logo-full.png" 
             alt="MAVERICK Logo" 
@@ -81,7 +81,7 @@ export default function AdminLayout({
       </main>
 
       {/* Bottom Nav para Móviles (Celulares) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-20 backdrop-blur-2xl bg-black/80 border-t border-white/10 z-50 px-6 flex items-center justify-around">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 min-h-[5rem] pb-[env(safe-area-inset-bottom,0px)] pt-2 backdrop-blur-2xl bg-black/80 border-t border-white/10 z-50 px-4 sm:px-6 flex items-center justify-around">
         {navItems.map((item) => (
           <Link 
             key={item.href} 
