@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { Search, UserCircle, Crown, Users } from 'lucide-react';
 import { AddClientModal } from '@/components/admin/AddClientModal';
-import { addStampToClient, removeStampFromClient } from '@/app/actions';
+import { AddStampModal } from '@/components/admin/AddStampModal';
 import { PeopleTabs } from '@/components/admin/PeopleTabs';
 import Link from 'next/link';
 
@@ -107,16 +107,11 @@ export default async function ClientsPage() {
                 >
                   Detalles
                 </Link>
-                <form action={removeStampFromClient.bind(null, client.id)} className="flex-1 flex">
-                  <button type="submit" className="flex-1 bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white text-sm font-bold py-2 rounded-xl transition-colors">
-                    -1 Sello
-                  </button>
-                </form>
-                <form action={addStampToClient.bind(null, client.id)} className="flex-[1.5] flex">
-                  <button type="submit" className="flex-1 bg-white text-black hover:bg-gray-200 text-sm font-bold py-2 rounded-xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-                    +1 Sello
-                  </button>
-                </form>
+                {!isFreeCut && (
+                  <div className="flex-[1.5]">
+                    <AddStampModal clientId={client.id} />
+                  </div>
+                )}
               </div>
             </div>
           );
