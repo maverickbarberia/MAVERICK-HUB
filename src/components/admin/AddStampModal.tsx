@@ -103,7 +103,7 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
       <button 
         type="button"
         onClick={() => setIsOpen(true)}
-        className="flex-[1.5] flex bg-white text-black hover:bg-gray-200 text-base font-bold py-3.5 rounded-2xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-[0.98] items-center justify-center gap-2"
+        className="w-full flex bg-white text-black hover:bg-gray-200 text-base font-bold py-3.5 rounded-2xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-[0.98] items-center justify-center gap-2"
       >
         <Camera size={20} />
         +1 Sello

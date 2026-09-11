@@ -24,8 +24,8 @@ export default function AdminPage() {
         </div>
 
         {/* Escáner de QR */}
-        <div className="backdrop-blur-xl bg-white/2 border border-white/8 p-6 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.5)] mx-auto overflow-hidden">
-          <div className="aspect-square w-full rounded-2xl overflow-hidden bg-black/50 flex items-center justify-center relative border border-white/5 shadow-inner">
+        <div className="backdrop-blur-xl bg-white/2 border border-white/8 p-4 sm:p-6 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.5)] mx-auto overflow-hidden">
+          <div className={`w-full rounded-2xl overflow-hidden bg-black/50 flex items-center justify-center relative border border-white/5 shadow-inner ${!scannedUserId ? 'aspect-square' : 'min-h-[350px]'}`}>
             
             {!scannedUserId ? (
               <>
@@ -50,16 +50,16 @@ export default function AdminPage() {
                 </div>
               </>
             ) : (
-              <div className="p-6 text-center flex flex-col items-center justify-center w-full h-full bg-black/80 backdrop-blur-md">
+              <div className="p-4 sm:p-6 text-center flex flex-col items-center justify-center w-full h-full bg-black/80 backdrop-blur-md">
                 <CheckCircle size={60} strokeWidth={1.5} className="text-green-500 mb-4 drop-shadow-[0_0_15px_rgba(34,197,94,0.5)]" />
                 
                 <h3 className="text-white font-bold text-xl mb-2">Cliente Identificado</h3>
-                <p className="text-gray-400 text-xs mb-6 break-all max-w-62.5 bg-white/5 p-3 rounded-xl border border-white/10">
+                <p className="text-gray-400 text-xs mb-6 break-all w-full max-w-xs mx-auto bg-white/5 p-3 rounded-xl border border-white/10">
                   {scannedUserId}
                 </p>
                 
                 {/* Botón para sumar sello */}
-                <div className="w-full mb-3 flex">
+                <div className="w-full mb-3">
                   <AddStampModal 
                     clientId={scannedUserId} 
                     onSuccess={() => {
