@@ -160,14 +160,11 @@ export async function editClient(formData: FormData) {
   return { success: true }
 }
 
-export async function addStampWithEvidence(formData: FormData) {
+export async function addStampWithEvidence(clientId: string, barberName: string, proofImageUrl: string) {
   const supabase = await createClient()
-  const clientId = formData.get('clientId') as string
-  const barberName = formData.get('barberName') as string
-  const file = formData.get('proofImage') as File
 
-  if (!clientId || !barberName || !file || file.size === 0) {
-    return { error: 'Por favor completa el nombre del barbero y toma una foto de la evidencia.' }
+  if (!clientId || !barberName || !proofImageUrl) {
+    return { error: 'Faltan datos requeridos (Cliente, Barbero o Foto).' }
   }
 
   // Capa 1: Verificar límite diario (Máximo 2 sellos por día)
@@ -195,23 +192,6 @@ export async function addStampWithEvidence(formData: FormData) {
   if (!client || client.stamps_earned >= 12) {
     return { error: 'El cliente ya tiene el máximo de sellos.' }
   }
-
-  // Subir la imagen a Supabase Storage
-  const fileExt = file.name.split('.').pop() || 'jpg'
-  const fileName = `${clientId}-${Date.now()}.${fileExt}`
-  const { error: uploadError } = await supabase.storage
-    .from('payment_proofs')
-    .upload(fileName, file, { contentType: file.type })
-
-  if (uploadError) {
-    return { error: `Error subiendo la foto: ${uploadError.message}` }
-  }
-
-  const { data: publicUrlData } = supabase.storage
-    .from('payment_proofs')
-    .getPublicUrl(fileName)
-    
-  const proofImageUrl = publicUrlData.publicUrl
 
   // Actualizar sellos
   await supabase
@@ -345,4 +325,53 @@ export async function redeemFreeCut(clientId: string) {
   revalidatePath('/admin/clients')
   revalidatePath(`/admin/clients/${clientId}`)
   revalidatePath('/admin')
+}
+
+// ==========================================
+// PERSONAS (TEAM MEMBERS)
+// ==========================================
+
+export async function addTeamMember(formData: FormData) {
+  const supabase = await createClient()
+  const fullName = formData.get('fullName') as string
+  const role = formData.get('role') as string
+
+  if (!fullName || !role) {
+    return { error: 'El nombre es obligatorio.' }
+  }
+
+  const { error } = await supabase
+    .from('team_members')
+    .insert({
+      full_name: fullName,
+      role: role,
+      status: 'ACTIVE'
+    })
+
+  if (error) {
+    return { error: `Error creando registro: ${error.message}` }
+  }
+
+  revalidatePath('/admin/barbers')
+  revalidatePath('/admin/staff')
+  return { success: true }
+}
+
+export async function toggleTeamMemberStatus(id: string, currentStatus: string) {
+  const supabase = await createClient()
+  
+  const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+  
+  const { error } = await supabase
+    .from('team_members')
+    .update({ status: newStatus })
+    .eq('id', id)
+    
+  if (error) {
+    console.error("Error toggling status:", error.message)
+    return;
+  }
+
+  revalidatePath('/admin/barbers')
+  revalidatePath('/admin/staff')
 }

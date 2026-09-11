@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { Search, UserCircle, Crown, Users } from 'lucide-react';
 import { AddClientModal } from '@/components/admin/AddClientModal';
 import { addStampToClient, removeStampFromClient } from '@/app/actions';
+import { PeopleTabs } from '@/components/admin/PeopleTabs';
 import Link from 'next/link';
 
 export default async function ClientsPage() {
@@ -17,6 +18,8 @@ export default async function ClientsPage() {
     <div className="w-full space-y-6">
       
       {/* Cabecera */}
+      <PeopleTabs />
+      
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center justify-between w-full md:w-auto gap-4">
           <div>

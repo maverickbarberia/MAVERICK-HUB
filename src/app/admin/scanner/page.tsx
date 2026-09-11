@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Scanner } from '@yudiel/react-qr-scanner'
 import { CheckCircle, ScanLine } from 'lucide-react'
-import { addStampToClient } from '@/app/actions'
+import { AddStampModal } from '@/components/admin/AddStampModal'
 import confetti from 'canvas-confetti'
 import { toast } from 'sonner'
 
@@ -59,31 +59,21 @@ export default function AdminPage() {
                 </p>
                 
                 {/* Botón para sumar sello */}
-                <button
-                  onClick={() => {
-                    startTransition(async () => {
-                      if (scannedUserId) {
-                        try {
-                          await addStampToClient(scannedUserId);
-                          confetti({
-                            particleCount: 100,
-                            spread: 70,
-                            origin: { y: 0.6 },
-                            colors: ['#ffffff', '#22c55e', '#a855f7']
-                          });
-                          toast.success('¡Sello sumado exitosamente!');
-                          setScannedUserId(null); // Resetear para el siguiente escaneo
-                        } catch (error) {
-                          toast.error('Hubo un error al sumar el sello.');
-                        }
-                      }
-                    });
-                  }}
-                  disabled={isPending}
-                  className="w-full bg-white text-black font-bold px-6 py-3.5 rounded-xl hover:bg-gray-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-[0.98] mb-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isPending ? 'Guardando...' : 'Sumar Sello'}
-                </button>
+                <div className="w-full mb-3 flex">
+                  <AddStampModal 
+                    clientId={scannedUserId} 
+                    onSuccess={() => {
+                      confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.6 },
+                        colors: ['#ffffff', '#22c55e', '#a855f7']
+                      });
+                      toast.success('¡Sello sumado exitosamente!');
+                      setScannedUserId(null); // Resetear para el siguiente escaneo
+                    }}
+                  />
+                </div>
 
                 <button
                   onClick={() => setScannedUserId(null)}

@@ -11,7 +11,7 @@ export default function AdminLayout({
   const navItems = [
     { name: 'Inicio', href: '/admin', icon: <Home size={24} /> },
     { name: 'Escáner', href: '/admin/scanner', icon: <ScanLine size={24} /> },
-    { name: 'Clientes', href: '/admin/clients', icon: <Users size={24} /> },
+    { name: 'Personas', href: '/admin/clients', icon: <Users size={24} /> },
     { name: 'Auditoría', href: '/admin/audit', icon: <ClipboardList size={24} /> },
     // Analytics is disabled for now, but ready for future implementation
     // { name: 'Métricas', href: '/admin/analytics', icon: <BarChart3 size={24} /> },

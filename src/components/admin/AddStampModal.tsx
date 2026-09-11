@@ -1,20 +1,39 @@
 'use client'
 
-import { useState, useRef, useTransition } from 'react'
+import { useState, useRef, useTransition, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Camera, User, Loader2, AlertCircle } from 'lucide-react'
 import { addStampWithEvidence } from '@/app/actions'
+import { createClient } from '@/utils/supabase/client'
 
 interface AddStampModalProps {
   clientId: string;
+  onSuccess?: () => void;
 }
 
-export function AddStampModal({ clientId }: AddStampModalProps) {
+export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [barbers, setBarbers] = useState<{ id: string, full_name: string }[]>([])
   const [isPending, startTransition] = useTransition()
   const formRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetchBarbers = async () => {
+        const supabase = createClient()
+        const { data } = await supabase
+          .from('team_members')
+          .select('id, full_name')
+          .eq('role', 'BARBER')
+          .eq('status', 'ACTIVE')
+          
+        if (data) setBarbers(data)
+      }
+      fetchBarbers()
+    }
+  }, [isOpen])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -32,14 +51,49 @@ export function AddStampModal({ clientId }: AddStampModalProps) {
     
     if (!formRef.current) return
     const formData = new FormData(formRef.current)
+    const barberName = formData.get('barberName') as string
+    const file = formData.get('proofImage') as File
     
+    if (!barberName || !file || file.size === 0) {
+      setError('Debes ingresar el nombre del barbero y subir la foto.')
+      return
+    }
+
     startTransition(async () => {
-      const result = await addStampWithEvidence(formData)
-      if (result?.error) {
-        setError(result.error)
-      } else {
-        setIsOpen(false)
-        setPreviewUrl(null)
+      try {
+        const supabase = createClient()
+        
+        // 1. Subir a Storage directamente desde el cliente
+        const fileExt = file.name.split('.').pop() || 'jpg'
+        const fileName = `${clientId}-${Date.now()}.${fileExt}`
+        
+        const { error: uploadError } = await supabase.storage
+          .from('payment_proofs')
+          .upload(fileName, file, { contentType: file.type })
+
+        if (uploadError) {
+          setError(`Error subiendo foto: ${uploadError.message}`)
+          return
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('payment_proofs')
+          .getPublicUrl(fileName)
+          
+        const proofImageUrl = publicUrlData.publicUrl
+
+        // 2. Llamar al servidor para registrar el sello y auditoría
+        const result = await addStampWithEvidence(clientId, barberName, proofImageUrl)
+        
+        if (result?.error) {
+          setError(result.error)
+        } else {
+          setIsOpen(false)
+          setPreviewUrl(null)
+          if (onSuccess) onSuccess()
+        }
+      } catch (err: any) {
+        setError('Ocurrió un error inesperado al procesar el sello.')
       }
     })
   }
@@ -90,18 +144,23 @@ export function AddStampModal({ clientId }: AddStampModalProps) {
                 )}
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 ml-1">Barbero que atendió</label>
+                  <label htmlFor="barberName" className="text-sm font-medium text-gray-300 ml-1">Barbero que atendió</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <User size={18} className="text-gray-500" />
                     </div>
-                    <input 
-                      type="text" 
+                    <select 
+                      id="barberName"
                       name="barberName" 
                       required
-                      placeholder="Ej. Juan, Carlos..."
-                      className="w-full bg-black border border-white/10 rounded-2xl py-3.5 pl-11 pr-4 text-base text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
-                    />
+                      defaultValue=""
+                      className="w-full bg-black border border-white/10 rounded-2xl py-3.5 pl-11 pr-4 text-base text-white focus:outline-none focus:ring-2 focus:ring-white/20 transition-all appearance-none"
+                    >
+                      <option value="" disabled className="text-gray-500">Selecciona el barbero...</option>
+                      {barbers.map(b => (
+                        <option key={b.id} value={b.full_name}>{b.full_name}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
