@@ -110,81 +110,81 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
                 </button>
               </div>
 
-              <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-                <div className="overflow-y-auto p-4 sm:p-6 scroll-smooth space-y-4 sm:space-y-5 flex-1">
+              <div className="overflow-y-auto min-h-0 w-full">
+                <form ref={formRef} onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-5">
                   <input type="hidden" name="clientId" value={clientId} />
                 
-                {error && (
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl text-sm flex items-start gap-2 shrink-0">
-                    <AlertCircle size={18} className="shrink-0 mt-0.5" />
-                    <p>{error}</p>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <label htmlFor="barberName" className="text-sm font-medium text-gray-300 ml-1">Barbero que atendió</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <User size={18} className="text-gray-500" />
+                  {error && (
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl text-sm flex items-start gap-2">
+                      <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                      <p>{error}</p>
                     </div>
-                    <select 
-                      id="barberName"
-                      name="barberName" 
-                      required
-                      defaultValue=""
-                      className="w-full bg-black border border-white/10 rounded-2xl py-3.5 pl-11 pr-4 text-base text-white focus:outline-none focus:ring-2 focus:ring-white/20 transition-all appearance-none"
-                    >
-                      <option value="" disabled className="text-gray-500">Selecciona el barbero...</option>
-                      {barbers.map(b => (
-                        <option key={b.id} value={b.full_name}>{b.full_name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                  )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 ml-1">Foto del Comprobante</label>
-                  
-                  <div className="relative w-full aspect-video bg-black border-2 border-dashed border-white/20 rounded-2xl overflow-hidden group hover:border-white/40 transition-colors">
-                    {previewUrl ? (
-                      <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 group-hover:text-gray-400 transition-colors">
-                        <Camera size={32} className="mb-2" />
-                        <span className="text-sm font-medium">Tomar o subir foto</span>
+                  <div className="space-y-2">
+                    <label htmlFor="barberName" className="text-sm font-medium text-gray-300 ml-1">Barbero que atendió</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <User size={18} className="text-gray-500" />
                       </div>
-                    )}
-                    
-                    <input 
-                      type="file" 
-                      name="proofImage" 
-                      accept="image/*" 
-                      capture="environment"
-                      required
-                      onChange={handleFileChange}
-                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                    />
+                      <select 
+                        id="barberName"
+                        name="barberName" 
+                        required
+                        defaultValue=""
+                        className="w-full bg-black border border-white/10 rounded-2xl py-3.5 pl-11 pr-4 text-base text-white focus:outline-none focus:ring-2 focus:ring-white/20 transition-all appearance-none"
+                      >
+                        <option value="" disabled className="text-gray-500">Selecciona el barbero...</option>
+                        {barbers.map(b => (
+                          <option key={b.id} value={b.full_name}>{b.full_name}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="p-4 sm:p-5 border-t border-white/10 bg-black shrink-0">
-                  <button 
-                    type="submit" 
-                    disabled={isPending}
-                    className="w-full bg-white text-black hover:bg-gray-200 text-lg font-bold py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {isPending ? (
-                      <>
-                        <Loader2 size={20} className="animate-spin" />
-                        Guardando...
-                      </>
-                    ) : (
-                      'Registrar Sello'
-                    )}
-                  </button>
-                </div>
-              </form>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-300 ml-1">Foto del Comprobante</label>
+                    
+                    <div className="relative w-full aspect-[3/4] bg-black border-2 border-dashed border-white/20 rounded-2xl overflow-hidden group hover:border-white/40 transition-colors">
+                      {previewUrl ? (
+                        <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 group-hover:text-gray-400 transition-colors">
+                          <Camera size={32} className="mb-2" />
+                          <span className="text-sm font-medium">Tomar o subir foto</span>
+                        </div>
+                      )}
+                      
+                      <input 
+                        type="file" 
+                        name="proofImage" 
+                        accept="image/*" 
+                        capture="environment"
+                        required
+                        onChange={handleFileChange}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-4">
+                    <button 
+                      type="submit" 
+                      disabled={isPending}
+                      className="w-full bg-white text-black hover:bg-gray-200 text-lg font-bold py-4 rounded-2xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {isPending ? (
+                        <>
+                          <Loader2 size={20} className="animate-spin" />
+                          Guardando...
+                        </>
+                      ) : (
+                        'Registrar Sello'
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </motion.div>
           </div>
         )}
