@@ -160,10 +160,15 @@ export async function editClient(formData: FormData) {
   return { success: true }
 }
 
-export async function addStampWithEvidence(clientId: string, barberName: string, proofImageUrl: string) {
-  const supabase = await createClient()
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
-  if (!clientId || !barberName || !proofImageUrl) {
+export async function addStampWithFormData(formData: FormData) {
+  const supabase = await createClient() // Para autenticación normal (admin)
+  const clientId = formData.get('clientId') as string
+  const barberName = formData.get('barberName') as string
+  const file = formData.get('proofImage') as File
+
+  if (!clientId || !barberName || !file || file.size === 0) {
     return { error: 'Faltan datos requeridos (Cliente, Barbero o Foto).' }
   }
 
@@ -192,6 +197,29 @@ export async function addStampWithEvidence(clientId: string, barberName: string,
   if (!client || client.stamps_earned >= 12) {
     return { error: 'El cliente ya tiene el máximo de sellos.' }
   }
+
+  // Crear cliente Admin para bypass RLS de Storage
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  const fileExt = file.name.split('.').pop() || 'jpg'
+  const fileName = `${clientId}-${Date.now()}.${fileExt}`
+  
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from('payment_proofs')
+    .upload(fileName, file, { contentType: file.type })
+
+  if (uploadError) {
+    return { error: `Error subiendo foto al servidor: ${uploadError.message}` }
+  }
+
+  const { data: publicUrlData } = supabaseAdmin.storage
+    .from('payment_proofs')
+    .getPublicUrl(fileName)
+    
+  const proofImageUrl = publicUrlData.publicUrl
 
   // Actualizar sellos
   await supabase

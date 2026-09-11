@@ -3,7 +3,7 @@
 import { useState, useRef, useTransition, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Camera, User, Loader2, AlertCircle } from 'lucide-react'
-import { addStampWithEvidence } from '@/app/actions'
+import { addStampWithFormData } from '@/app/actions'
 import { createClient } from '@/utils/supabase/client'
 
 interface AddStampModalProps {
@@ -61,29 +61,7 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
 
     startTransition(async () => {
       try {
-        const supabase = createClient()
-        
-        // 1. Subir a Storage directamente desde el cliente
-        const fileExt = file.name.split('.').pop() || 'jpg'
-        const fileName = `${clientId}-${Date.now()}.${fileExt}`
-        
-        const { error: uploadError } = await supabase.storage
-          .from('payment_proofs')
-          .upload(fileName, file, { contentType: file.type })
-
-        if (uploadError) {
-          setError(`Error subiendo foto: ${uploadError.message}`)
-          return
-        }
-
-        const { data: publicUrlData } = supabase.storage
-          .from('payment_proofs')
-          .getPublicUrl(fileName)
-          
-        const proofImageUrl = publicUrlData.publicUrl
-
-        // 2. Llamar al servidor para registrar el sello y auditoría
-        const result = await addStampWithEvidence(clientId, barberName, proofImageUrl)
+        const result = await addStampWithFormData(formData)
         
         if (result?.error) {
           setError(result.error)
