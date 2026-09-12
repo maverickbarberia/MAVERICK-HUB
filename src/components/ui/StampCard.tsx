@@ -170,7 +170,7 @@ export function StampCard({ stampsEarned, clientId, transactions = [], isAdmin =
       {/* Modal Detalles del Sello */}
       <AnimatePresence>
         {selectedTx && (
-          <div className="fixed inset-0 z-[9999] bg-[#0a0a0a] overflow-y-auto overflow-x-hidden">
+          <div className="fixed inset-0 z-9999 bg-[#0a0a0a] overflow-y-auto overflow-x-hidden">
             <motion.div 
               initial={{ opacity: 0, y: '100%' }}
               animate={{ opacity: 1, y: 0 }}
@@ -215,7 +215,7 @@ export function StampCard({ stampsEarned, clientId, transactions = [], isAdmin =
                     <p className="text-xs text-gray-400 uppercase tracking-wider">Evidencia Fotográfica</p>
                   </div>
                   {selectedTx.proof_image_url ? (
-                    <a href={selectedTx.proof_image_url} target="_blank" rel="noopener noreferrer" className="block relative aspect-[3/4] w-full rounded-2xl overflow-hidden border border-white/10 group cursor-pointer bg-black/40 shadow-inner">
+                    <a href={selectedTx.proof_image_url} target="_blank" rel="noopener noreferrer" className="block relative aspect-3/4 w-full rounded-2xl overflow-hidden border border-white/10 group cursor-pointer bg-black/40 shadow-inner">
                       <img 
                         src={selectedTx.proof_image_url} 
                         alt="Evidencia" 

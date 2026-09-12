@@ -89,7 +89,7 @@ export function AddStampModal({ clientId, onSuccess }: AddStampModalProps) {
 
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-[100] bg-[#0a0a0a] overflow-y-auto overflow-x-hidden">
+          <div className="fixed inset-0 z-100 bg-[#0a0a0a] overflow-y-auto overflow-x-hidden">
             <motion.div 
               initial={{ opacity: 0, y: '100%' }}
               animate={{ opacity: 1, y: 0 }}

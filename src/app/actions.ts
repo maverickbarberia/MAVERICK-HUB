@@ -265,10 +265,7 @@ export async function addStampWithFormData(formData: FormData) {
 
 export async function addStampToClient(clientId: string) {
   const supabase = await createClient()
-  const supabaseAdmin = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+
   
   // Capa 1: Verificar límite diario (Máximo 2 sellos por día)
   const startOfDay = new Date();
@@ -410,10 +407,7 @@ export async function decrementLegacyStamp(clientId: string) {
 
 export async function redeemFreeCut(clientId: string) {
   const supabase = await createClient()
-  const supabaseAdmin = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+
   
   // Get current stamps
   const { data: client } = await supabase
