@@ -380,17 +380,25 @@ export async function deleteStampTransaction(transactionId: string, clientId: st
 export async function decrementLegacyStamp(clientId: string) {
   const supabase = await createClient()
   
-  const { data: client } = await supabase
+  const { data: client, error } = await supabase
     .from('clients')
     .select('stamps_earned')
     .eq('id', clientId)
     .single()
     
-  if (client && client.stamps_earned > 0) {
-    await supabase
+  if (error || !client) {
+    return { error: 'Error al obtener cliente' }
+  }
+    
+  if (client.stamps_earned > 0) {
+    const { error: updateError } = await supabase
       .from('clients')
       .update({ stamps_earned: client.stamps_earned - 1 })
       .eq('id', clientId)
+      
+    if (updateError) {
+      return { error: 'Error al actualizar sellos' }
+    }
   }
 
   revalidatePath('/admin/clients')
