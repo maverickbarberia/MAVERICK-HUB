@@ -30,7 +30,12 @@ export function StampCard({ stampsEarned, clientId, transactions = [], isAdmin =
   const handleStampClick = (index: number, isEarned: boolean) => {
     if (!isAdmin || !isEarned) return;
     if (!transactions[index]) {
-      alert("Este sello es anterior al nuevo sistema fotográfico. Para modificar sellos antiguos o corregir conteos por favor comunícate con soporte o ajusta el total manualmente en la base de datos.");
+      setSelectedTx({
+        id: 'legacy',
+        created_at: new Date().toISOString(),
+        barber_name: 'Desconocido (Sello Antiguo/Manual)',
+        proof_image_url: null,
+      });
       return;
     }
     setSelectedTx(transactions[index]);
@@ -43,12 +48,22 @@ export function StampCard({ stampsEarned, clientId, transactions = [], isAdmin =
 
     setIsDeleting(true);
     try {
-      const { deleteStampTransaction } = await import('@/app/actions');
-      const res = await deleteStampTransaction(selectedTx.id, clientId);
-      if (res?.error) {
-        alert(res.error);
+      if (selectedTx.id === 'legacy') {
+        const { decrementLegacyStamp } = await import('@/app/actions');
+        const res = await decrementLegacyStamp(clientId);
+        if (res?.error) {
+          alert(res.error);
+        } else {
+          setSelectedTx(null);
+        }
       } else {
-        setSelectedTx(null);
+        const { deleteStampTransaction } = await import('@/app/actions');
+        const res = await deleteStampTransaction(selectedTx.id, clientId);
+        if (res?.error) {
+          alert(res.error);
+        } else {
+          setSelectedTx(null);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -155,7 +170,7 @@ export function StampCard({ stampsEarned, clientId, transactions = [], isAdmin =
       {/* Modal Detalles del Sello */}
       <AnimatePresence>
         {selectedTx && (
-          <div className="fixed inset-0 z-[100] bg-[#0a0a0a] overflow-y-auto overflow-x-hidden">
+          <div className="fixed inset-0 z-[9999] bg-[#0a0a0a] overflow-y-auto overflow-x-hidden">
             <motion.div 
               initial={{ opacity: 0, y: '100%' }}
               animate={{ opacity: 1, y: 0 }}
@@ -175,7 +190,7 @@ export function StampCard({ stampsEarned, clientId, transactions = [], isAdmin =
                 </button>
               </div>
 
-              <div className="flex-1 w-full pb-8 p-4 sm:p-6 space-y-6">
+              <div className="flex-1 w-full pb-[calc(120px+env(safe-area-inset-bottom,0px))] p-4 sm:p-6 space-y-6">
                 <p className="text-sm text-gray-400 flex items-center gap-2">
                   <Calendar size={16} className="text-white/50" />
                   {new Intl.DateTimeFormat('es-CO', { 
@@ -204,7 +219,15 @@ export function StampCard({ stampsEarned, clientId, transactions = [], isAdmin =
                       <img 
                         src={selectedTx.proof_image_url} 
                         alt="Evidencia" 
-                        className="w-full h-full object-contain" 
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
+                          const text = document.createElement('span');
+                          text.className = 'text-gray-500 text-sm absolute z-0';
+                          text.innerText = 'Imagen no disponible';
+                          e.currentTarget.parentElement?.appendChild(text);
+                        }}
                       />
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <span className="text-white text-sm font-medium bg-black/60 px-4 py-2 rounded-full backdrop-blur-md">Ampliar Foto</span>

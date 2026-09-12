@@ -377,6 +377,29 @@ export async function deleteStampTransaction(transactionId: string, clientId: st
   return { success: true }
 }
 
+export async function decrementLegacyStamp(clientId: string) {
+  const supabase = await createClient()
+  
+  const { data: client } = await supabase
+    .from('clients')
+    .select('stamps_earned')
+    .eq('id', clientId)
+    .single()
+    
+  if (client && client.stamps_earned > 0) {
+    await supabase
+      .from('clients')
+      .update({ stamps_earned: client.stamps_earned - 1 })
+      .eq('id', clientId)
+  }
+
+  revalidatePath('/admin/clients')
+  revalidatePath(`/admin/clients/${clientId}`)
+  revalidatePath('/admin')
+  
+  return { success: true }
+}
+
 export async function redeemFreeCut(clientId: string) {
   const supabase = await createClient()
   const supabaseAdmin = createSupabaseClient(
