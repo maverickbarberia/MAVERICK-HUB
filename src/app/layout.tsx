@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'sonner';
+import { InstallPWA } from "@/components/InstallPWA";
+
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -14,7 +16,7 @@ const montserrat = Montserrat({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#1a1a1a",
+  themeColor: "#050505",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -27,9 +29,17 @@ export const metadata: Metadata = {
   description: "Sistema de Fidelización Maverick Barbería",
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/icon-192.png",
-    apple: "/icon-192.png",
-  }
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Maverick",
+  },
 };
 
 export default function RootLayout({
@@ -52,7 +62,9 @@ export default function RootLayout({
         <div className="relative z-10 w-full min-h-dvh">
           {children}
         </div>
+        
         <Toaster theme="dark" position="top-center" />
+        <InstallPWA />
 
         {/* Registro del Service Worker para PWA */}
         <script
