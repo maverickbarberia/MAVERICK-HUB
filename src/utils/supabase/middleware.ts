@@ -36,6 +36,18 @@ export async function updateSession(request: NextRequest) {
   const isClientLogged = !!clientId
   
   const pathname = request.nextUrl.pathname
+  
+  // Rutas públicas de PWA y recursos estáticos
+  if (
+    pathname === '/sw.js' ||
+    pathname === '/manifest.webmanifest' ||
+    pathname === '/manifest.json' ||
+    pathname.startsWith('/icon') ||
+    pathname.startsWith('/apple-touch-icon')
+  ) {
+    return supabaseResponse
+  }
+
   const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register')
   
   // No hay sesión activa de ningún tipo, pero la ruta es protegida
