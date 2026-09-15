@@ -3,7 +3,24 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+
+/**
+ * Guardián de Seguridad Central:
+ * Verifica criptográficamente que la petición provenga de un Administrador con sesión activa.
+ * Si no es admin, aborta inmediatamente la ejecución para prevenir accesos no autorizados.
+ */
+async function requireAdmin() {
+  const supabase = await createClient()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  
+  if (error || !user) {
+    throw new Error('Acceso no autorizado: Se requiere sesión de administrador activa.')
+  }
+  
+  return { supabase, user }
+}
 
 // ADMIN ACTIONS (Email/Password via Supabase Auth)
 export async function login(formData: FormData) {
@@ -43,6 +60,7 @@ export async function loginClientAction(formData: FormData) {
   cookieStore.set('client_session', client.id, { 
     httpOnly: true, 
     secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 30 // 30 days
   })
 
@@ -59,7 +77,7 @@ export async function registerClientAction(formData: FormData) {
   const { data: newClient, error } = await supabase
     .from('clients')
     .insert([
-      { document_number: documentNumber, full_name: fullName, phone_number: phoneNumber }
+      { document_number: documentNumber, full_name: fullName, phone_number: phoneNumber, stamps_earned: 0 }
     ])
     .select('id')
     .single()
@@ -72,6 +90,7 @@ export async function registerClientAction(formData: FormData) {
   cookieStore.set('client_session', newClient.id, { 
     httpOnly: true, 
     secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 30 // 30 days
   })
 
@@ -94,25 +113,15 @@ export async function signout() {
 }
 
 export async function createClientFromAdmin(formData: FormData) {
-  const supabase = await createClient()
+  const { supabase } = await requireAdmin()
   const documentNumber = formData.get('document_number') as string
   const fullName = formData.get('full_name') as string
   const phoneNumber = formData.get('phone_number') as string
 
-  // Verificar que el admin esté logueado (protección extra)
-  const cookieStore = await cookies()
-  const adminId = cookieStore.get('admin_session')?.value
-  // Fallback a supabase auth si el admin sesión falla
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!adminId && !user) {
-    return { error: 'No autorizado' }
-  }
-
   const { error } = await supabase
     .from('clients')
     .insert([
-      { document_number: documentNumber, full_name: fullName, phone_number: phoneNumber }
+      { document_number: documentNumber, full_name: fullName, phone_number: phoneNumber, stamps_earned: 0 }
     ])
 
   if (error) {
@@ -127,21 +136,11 @@ export async function createClientFromAdmin(formData: FormData) {
 }
 
 export async function editClient(formData: FormData) {
-  const supabase = await createClient()
+  const { supabase } = await requireAdmin()
   const clientId = formData.get('id') as string
   const documentNumber = formData.get('document_number') as string
   const fullName = formData.get('full_name') as string
   const phoneNumber = formData.get('phone_number') as string
-
-  // Verificar que el admin esté logueado (protección extra)
-  const cookieStore = await cookies()
-  const adminId = cookieStore.get('admin_session')?.value
-  // Fallback a supabase auth si el admin sesión falla
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!adminId && !user) {
-    return { error: 'No autorizado' }
-  }
 
   const { error } = await supabase
     .from('clients')
@@ -160,11 +159,11 @@ export async function editClient(formData: FormData) {
   return { success: true }
 }
 
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-
 export async function addStampWithFormData(formData: FormData) {
   try {
-    const supabase = await createClient() // Para autenticación normal (admin)
+    // BLINDAJE DE SEGURIDAD 1: Solo administradores autenticados pueden sumar sellos
+    const { supabase, user } = await requireAdmin()
+    
     const clientId = formData.get('clientId') as string
     const barberName = formData.get('barberName') as string
     const file = formData.get('proofImage') as File
@@ -173,7 +172,7 @@ export async function addStampWithFormData(formData: FormData) {
       return { error: 'Faltan datos requeridos (Cliente, Barbero o Foto).' }
     }
 
-    // Capa 1: Verificar límite diario (Máximo 2 sellos por día)
+    // Capa 1: Límite diario (Máximo 2 sellos por día para el cliente)
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
@@ -199,7 +198,7 @@ export async function addStampWithFormData(formData: FormData) {
       return { error: 'El cliente ya tiene el máximo de sellos.' }
     }
 
-    // Crear cliente Admin para bypass RLS de Storage
+    // Cliente Admin para subida segura al Storage
     const supabaseAdmin = createSupabaseClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -208,7 +207,6 @@ export async function addStampWithFormData(formData: FormData) {
     const fileExt = file.name.split('.').pop() || 'jpg'
     const fileName = `${clientId}-${Date.now()}.${fileExt}`
     
-    // Convertir el archivo a Buffer para evitar errores de compatibilidad en Server Actions
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
     
@@ -236,11 +234,10 @@ export async function addStampWithFormData(formData: FormData) {
       return { error: `Error actualizando cliente: ${updateError.message}` }
     }
 
-    // Capa 2: Registrar auditoría con evidencia
-    const { data: { user } } = await supabase.auth.getUser()
+    // Capa 2: Auditoría obligatoria ligada al Admin ID verificado
     const { error: auditError } = await supabase.from('stamp_transactions').insert({
       client_id: clientId,
-      admin_id: user?.id || null,
+      admin_id: user.id,
       action_type: 'ADD',
       barber_name: barberName,
       proof_image_url: proofImageUrl
@@ -248,7 +245,6 @@ export async function addStampWithFormData(formData: FormData) {
     
     if (auditError) {
       console.error("Audit insert error:", auditError)
-      // Si falla la auditoría al menos alertamos, aunque el sello ya se haya actualizado.
     }
     
     revalidatePath('/admin/clients')
@@ -259,64 +255,19 @@ export async function addStampWithFormData(formData: FormData) {
   } catch (error: unknown) {
     console.error("Error in addStampWithFormData:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return { error: `Error interno del servidor: ${errorMessage}` };
+    return { error: errorMessage };
   }
 }
 
-export async function addStampToClient(clientId: string) {
-  const supabase = await createClient()
-
-  
-  // Capa 1: Verificar límite diario (Máximo 2 sellos por día)
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-
-  const { data: todayStamps } = await supabase
-    .from('stamp_transactions')
-    .select('id')
-    .eq('client_id', clientId)
-    .eq('action_type', 'ADD')
-    .gte('created_at', startOfDay.toISOString());
-
-  if (todayStamps && todayStamps.length >= 2) {
-    console.error("Límite diario de sellos alcanzado para el cliente:", clientId);
-    return;
-  }
-
-  // Get current stamps
-  const { data: client } = await supabase
-    .from('clients')
-    .select('stamps_earned')
-    .eq('id', clientId)
-    .single()
-    
-  if (client) {
-    if (client.stamps_earned >= 12) {
-      // No permitir más de 12 sellos
-      return
-    }
-    
-    await supabase
-      .from('clients')
-      .update({ stamps_earned: client.stamps_earned + 1 })
-      .eq('id', clientId)
-
-    // Capa 2: Registrar auditoría
-    const { data: { user } } = await supabase.auth.getUser()
-    await supabase.from('stamp_transactions').insert({
-      client_id: clientId,
-      admin_id: user?.id || null,
-      action_type: 'ADD'
-    })
-  }
-  
-  revalidatePath('/admin/clients')
-  revalidatePath(`/admin/clients/${clientId}`)
-  revalidatePath('/admin')
+/**
+ * Función obsoleta deshabilitada por seguridad para forzar el uso del escáner con foto.
+ */
+export async function addStampToClient(_clientId: string) {
+  throw new Error('Acción bloqueada: Debe utilizarse el escáner con comprobante y barbero.');
 }
 
 export async function deleteStampTransaction(transactionId: string, clientId: string) {
-  const supabase = await createClient()
+  const { supabase } = await requireAdmin()
   const supabaseAdmin = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -353,7 +304,7 @@ export async function deleteStampTransaction(transactionId: string, clientId: st
       .eq('id', clientId)
   }
 
-  // 4. (Opcional) Intentar borrar la imagen del bucket si existía
+  // 4. Intentar borrar la imagen del bucket si existía
   if (tx.proof_image_url) {
     try {
       const url = new URL(tx.proof_image_url)
@@ -375,7 +326,7 @@ export async function deleteStampTransaction(transactionId: string, clientId: st
 }
 
 export async function decrementLegacyStamp(clientId: string) {
-  const supabase = await createClient()
+  const { supabase } = await requireAdmin()
   
   const { data: client, error } = await supabase
     .from('clients')
@@ -406,10 +357,9 @@ export async function decrementLegacyStamp(clientId: string) {
 }
 
 export async function redeemFreeCut(clientId: string) {
-  const supabase = await createClient()
+  const { supabase, user } = await requireAdmin()
 
-  
-  // Get current stamps
+  // Obtener sellos actuales
   const { data: client } = await supabase
     .from('clients')
     .select('stamps_earned')
@@ -422,11 +372,10 @@ export async function redeemFreeCut(clientId: string) {
       .update({ stamps_earned: client.stamps_earned - 12 })
       .eq('id', clientId)
 
-    // Registrar auditoría
-    const { data: { user } } = await supabase.auth.getUser()
+    // Registrar auditoría con el admin responsable
     await supabase.from('stamp_transactions').insert({
       client_id: clientId,
-      admin_id: user?.id || null,
+      admin_id: user.id,
       action_type: 'REDEEM_FREE'
     })
   }
@@ -441,7 +390,7 @@ export async function redeemFreeCut(clientId: string) {
 // ==========================================
 
 export async function addTeamMember(formData: FormData) {
-  const supabase = await createClient()
+  const { supabase } = await requireAdmin()
   const fullName = formData.get('fullName') as string
   const role = formData.get('role') as string
 
@@ -467,7 +416,7 @@ export async function addTeamMember(formData: FormData) {
 }
 
 export async function toggleTeamMemberStatus(id: string, currentStatus: string) {
-  const supabase = await createClient()
+  const { supabase } = await requireAdmin()
   
   const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
   

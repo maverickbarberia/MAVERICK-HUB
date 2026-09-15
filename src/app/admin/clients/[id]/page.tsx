@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { StampCard } from '@/components/ui/StampCard';
 import Link from 'next/link';
 import { ArrowLeft, UserCircle, Crown } from 'lucide-react';
-import { addStampToClient, redeemFreeCut } from '@/app/actions';
+import { redeemFreeCut } from '@/app/actions';
 import { EditClientModal } from '@/components/admin/EditClientModal';
 import { AddStampModal } from '@/components/admin/AddStampModal';
 import { notFound } from 'next/navigation';
