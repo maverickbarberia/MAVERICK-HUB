@@ -13,6 +13,9 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
 }
 
+// Variable global en memoria para compartir el evento de instalación entre componentes
+let globalDeferredPrompt: BeforeInstallPromptEvent | null = null
+
 export function InstallPWA() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isVisible, setIsVisible] = useState(false)
@@ -29,38 +32,37 @@ export function InstallPWA() {
       return // Ya es app instalada, no mostrar nada
     }
 
-    // 2. Verificar si el usuario ya descartó el aviso en las últimas 24 horas
-    const dismissedTime = localStorage.getItem('maverick_pwa_dismissed')
-    if (dismissedTime) {
-      const hoursSinceDismiss = (Date.now() - parseInt(dismissedTime, 10)) / (1000 * 60 * 60)
-      if (hoursSinceDismiss < 24) {
-        return
-      }
+    // 2. Verificar si el usuario ya descartó el aviso en esta sesión
+    const isDismissed = sessionStorage.getItem('maverick_pwa_dismissed')
+    if (isDismissed) {
+      return
     }
 
-    // 3. Detectar si es iOS
+    // 3. Detectar dispositivo iOS
     const userAgent = window.navigator.userAgent.toLowerCase()
     const isIosDevice = /iphone|ipad|ipod/.test(userAgent)
     setIsIOS(isIosDevice)
 
-    // 4. Capturar el evento de instalación nativo de Chrome Android
+    // 4. Capturar el evento de instalación de Android Chrome
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault()
-      setDeferredPrompt(e as BeforeInstallPromptEvent)
+      const promptEvent = e as BeforeInstallPromptEvent
+      globalDeferredPrompt = promptEvent
+      setDeferredPrompt(promptEvent)
       setIsVisible(true)
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
 
-    // Mostrar el banner tras 1.5 segundos para que cargue suavemente
+    // Mostrar el banner automáticamente para facilitar la instalación
     const timer = setTimeout(() => {
       setIsVisible(true)
-    }, 1500)
+    }, 1000)
 
-    // Ocultar si se completa la instalación
     const handleAppInstalled = () => {
       setIsVisible(false)
       setDeferredPrompt(null)
+      globalDeferredPrompt = null
     }
     window.addEventListener('appinstalled', handleAppInstalled)
 
@@ -73,24 +75,25 @@ export function InstallPWA() {
 
   const handleDismiss = () => {
     setIsVisible(false)
-    localStorage.setItem('maverick_pwa_dismissed', Date.now().toString())
+    sessionStorage.setItem('maverick_pwa_dismissed', 'true')
   }
 
   const handleInstallClick = async () => {
-    if (deferredPrompt) {
+    const prompt = deferredPrompt || globalDeferredPrompt
+    if (prompt) {
       try {
-        await deferredPrompt.prompt()
-        const { outcome } = await deferredPrompt.userChoice
+        await prompt.prompt()
+        const { outcome } = await prompt.userChoice
         if (outcome === 'accepted') {
           setIsVisible(false)
         }
         setDeferredPrompt(null)
+        globalDeferredPrompt = null
       } catch (err) {
         console.error('Error al solicitar instalación PWA:', err)
         setShowInstructions(true)
       }
     } else {
-      // Si el navegador no dio el evento automático (p. ej. HTTP local o Safari)
       setShowInstructions(true)
     }
   }
@@ -99,9 +102,9 @@ export function InstallPWA() {
 
   return (
     <>
-      {/* Banner flotante de instalación en la parte inferior */}
-      <div className="fixed bottom-4 left-4 right-4 z-50 max-w-md mx-auto animate-in fade-in slide-in-from-bottom-5 duration-300">
-        <div className="relative flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-zinc-950/95 backdrop-blur-md border border-zinc-800 shadow-[0_10px_35px_rgba(0,0,0,0.8)]">
+      {/* Banner flotante de instalación */}
+      <div className="fixed bottom-5 left-4 right-4 z-50 max-w-md mx-auto animate-in fade-in slide-in-from-bottom-5 duration-300">
+        <div className="relative flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#09090b]/95 backdrop-blur-xl border border-zinc-700/80 shadow-[0_12px_40px_rgba(0,0,0,0.9)]">
           {/* Logo y textos */}
           <div className="flex items-center gap-3 min-w-0">
             <div className="relative w-11 h-11 rounded-xl bg-black border border-zinc-800 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
@@ -118,7 +121,7 @@ export function InstallPWA() {
                 Maverick Barbería
               </p>
               <p className="text-xs text-zinc-400 truncate">
-                Descarga la app en tu celular
+                Instalar App en tu celular
               </p>
             </div>
           </div>
@@ -144,7 +147,7 @@ export function InstallPWA() {
         </div>
       </div>
 
-      {/* Modal de instrucciones en caso de que el navegador no soporte el prompt directo */}
+      {/* Modal interactivo de instrucciones */}
       {showInstructions && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="relative w-full max-w-sm rounded-2xl bg-zinc-900 border border-zinc-700 p-5 shadow-2xl">
@@ -160,14 +163,14 @@ export function InstallPWA() {
                 <Smartphone size={22} />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Cómo instalar la App</h3>
-                <p className="text-xs text-zinc-400">Guía rápida de instalación</p>
+                <h3 className="text-base font-bold text-white">Instalar App Maverick</h3>
+                <p className="text-xs text-zinc-400">Pasos para tu teléfono</p>
               </div>
             </div>
 
             {isIOS ? (
               <div className="space-y-3 text-xs text-zinc-300">
-                <p>Para iPhone (Safari):</p>
+                <p>En iPhone (Safari):</p>
                 <div className="p-3 bg-zinc-950/60 rounded-xl border border-zinc-800 space-y-2">
                   <p>1. Toca el botón <strong>Compartir</strong> (icono de cuadrado con flecha hacia arriba).</p>
                   <p>2. Desliza hacia abajo y selecciona <strong>&quot;Agregar a la pantalla de inicio&quot;</strong>.</p>
@@ -175,15 +178,16 @@ export function InstallPWA() {
               </div>
             ) : (
               <div className="space-y-3 text-xs text-zinc-300">
-                <p>En Android (Google Chrome):</p>
+                <p className="font-semibold text-white">En Android (Google Chrome):</p>
                 <div className="p-3 bg-zinc-950/60 rounded-xl border border-zinc-800 space-y-2.5">
-                  <p>1. Toca el menú de los <strong>tres puntos (⋮)</strong> arriba a la derecha en Chrome.</p>
-                  <p>2. Elige <strong>&quot;Instalar aplicación&quot;</strong> (o &quot;Agregar a la pantalla principal&quot;).</p>
+                  <p>1. Toca los <strong>tres puntos verticales (⋮)</strong> arriba a la derecha en Chrome.</p>
+                  <p>2. Selecciona la opción <strong>&quot;Instalar aplicación&quot;</strong> (o &quot;Agregar a la pantalla principal&quot;).</p>
+                  <p>3. Pulsa <strong>&quot;Instalar&quot;</strong> para confirmar.</p>
                 </div>
                 <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-2 text-amber-200 text-[11px]">
                   <Info size={15} className="shrink-0 mt-0.5 text-amber-400" />
                   <span>
-                    <strong>Nota importante:</strong> Android requiere que la web tenga conexión <strong>HTTPS</strong> (por ejemplo cuando esté subida a Vercel o tu dominio) para crear la App oficial independiente con su logo.
+                    Si tenías un acceso directo anterior en tu pantalla de inicio, <strong>bórralo primero</strong> y borra la caché en Chrome para que se instale con el nuevo icono oficial.
                   </span>
                 </div>
               </div>
