@@ -38,12 +38,7 @@ export function InstallPWA() {
       return
     }
 
-    // 3. Detectar dispositivo iOS
-    const userAgent = window.navigator.userAgent.toLowerCase()
-    const isIosDevice = /iphone|ipad|ipod/.test(userAgent)
-    setIsIOS(isIosDevice)
-
-    // 4. Capturar el evento de instalación de Android Chrome
+    // 3. Capturar el evento de instalación de Android Chrome
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault()
       const promptEvent = e as BeforeInstallPromptEvent
@@ -79,6 +74,9 @@ export function InstallPWA() {
   }
 
   const handleInstallClick = async () => {
+    const isIosDevice = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase())
+    setIsIOS(isIosDevice)
+
     const prompt = deferredPrompt || globalDeferredPrompt
     if (prompt) {
       try {
